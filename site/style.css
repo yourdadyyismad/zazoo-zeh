@@ -1,0 +1,153 @@
+/* --- Global Styles --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: url("../dracula-bg.jpg") no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Orbitron', sans-serif;
+    color: #00ffcc;
+    overflow-x: hidden;
+    text-align: center;
+}
+
+/* --- Hero Section --- */
+.hero {
+    text-align: center;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    color: #ff0077;
+    animation: glitch 2s infinite alternate;
+}
+
+.tagline {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #ddd;
+    margin-top: 5px;
+}
+
+/* --- API Section --- */
+.api-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.api-card {
+    background: rgba(15, 15, 15, 0.85);
+    border: 2px solid #ff0077;
+    border-radius: 12px;
+    padding: 20px;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0px 0px 15px rgba(255, 0, 119, 0.6);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.api-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 20px rgba(255, 0, 119, 0.8);
+}
+
+.api-card h2 {
+    color: #ff0077;
+    font-size: 1.6rem;
+}
+
+.api-card p {
+    color: #ccc;
+    font-size: 1rem;
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.api-link-box {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px;
+    border-radius: 5px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.api-url {
+    width: 100%;
+    max-width: 600px;
+    background: rgba(30, 30, 30, 0.9);
+    color: #00ffcc;
+    font-size: 1rem;
+    text-align: center;
+    border: 1px solid #ff0077;
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    outline: none;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+/* --- Buttons --- */
+button {
+    background: #ff0077;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s;
+    box-shadow: 0px 0px 10px rgba(255, 0, 119, 0.6);
+    margin: 5px;
+}
+
+button:hover {
+    background: #ff0048;
+    transform: scale(1.05);
+    box-shadow: 0px 0px 15px rgba(255, 0, 119, 0.9);
+}
+
+/* --- Footer --- */
+footer {
+    text-align: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    font-size: 0.9rem;
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+}
+
+.copyright {
+    color: #ff0077;
+    text-shadow: 0px 0px 5px #ff0077;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease-in-out;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.copyright:hover {
+    color: #00ffcc;
+    transform: scale(1.05);
+}
