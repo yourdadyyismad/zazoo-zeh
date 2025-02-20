@@ -25,16 +25,18 @@ router.get('/', async (req, res) => {
         }
 
         res.json({
-            creator: "DRACULA",
-            status: response.status,
-            title,
-            released: time,
-            video_link: vid
+            CREATOR: "DRACULA",
+            STATUS: response.status,
+            TITLE: title,
+            RELEASED: time,
+            VIDEO_LINK: vid
         });
-    } catch (error) {
-        console.error("Error fetching video:", error.message);
-        res.status(500).json({ error: "Failed to fetch video details" });
-    }
+        } catch (error) {
+        res.status(500).json({
+            CREATOR: "DRACULA",
+            SUCCESS: false,
+            ERROR: error.message
+        });
 });
 
 module.exports = router;
