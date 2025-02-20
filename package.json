@@ -14,6 +14,7 @@
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "express": "^4.21.2",
+    "puppeteer": "latest",
     "fluent-ffmpeg": "^2.1.3",
     "fs": "^0.0.1-security",
     "js-confuser": "^2.0.0",
