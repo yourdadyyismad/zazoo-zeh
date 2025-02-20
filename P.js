@@ -8,7 +8,14 @@ const puppeteer = require('puppeteer-core');
     });
 
     const page = await browser.newPage();
-    await page.goto('https://example.com');
-    console.log(await page.title());
+    await page.goto('https://github.com/suhail');
+
+    try {
+const title = await page.$eval('.p-name.vcard-fullname.d-block.overflow-hidden', el => el.innerText);
+console.log("Title:", title);
+    } catch(error) {
+        console.log("chai")
+    }
+    
     await browser.close();
 })();
