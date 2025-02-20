@@ -1,54 +1,242 @@
 [
-    {"author": "Itachi Uchiha", "anime": "Naruto Shippuden", "quote": "People's lives don't end when they die, it ends when they lose faith."},
-    {"author": "Levi Ackerman", "anime": "Attack on Titan", "quote": "A lesson without pain is meaningless."},
-    {"author": "Goku", "anime": "Dragon Ball Z", "quote": "Power comes in response to a need, not a desire."},
-    {"author": "Lelouch Lamperouge", "anime": "Code Geass", "quote": "You have to destroy before you can create."},
-    {"author": "Edward Elric", "anime": "Fullmetal Alchemist: Brotherhood", "quote": "A lesson without pain is meaningless."},
-    {"author": "Light Yagami", "anime": "Death Note", "quote": "He who strikes first wins."},
-    {"author": "Roronoa Zoro", "anime": "One Piece", "quote": "You should enjoy the little detours. Because that's where you'll find the things more important than what you want."},
-    {"author": "Kenpachi Zaraki", "anime": "Bleach", "quote": "You really think you can beat me just because you try hard?"},
-    {"author": "Jiraiya", "anime": "Naruto", "quote": "A person grows up when he has to take responsibility for something bigger than himself."},
-    {"author": "Kenshin Himura", "anime": "Rurouni Kenshin", "quote": "You can always die. It's living that takes real courage."},
-    {"author": "Monkey D. Luffy", "anime": "One Piece", "quote": "If you don’t take risks, you can’t create a future."},
-    {"author": "Spike Spiegel", "anime": "Cowboy Bebop", "quote": "Whatever happens, happens."},
-    {"author": "Shoyo Hinata", "anime": "Haikyuu!!", "quote": "The future belongs to those who believe in the beauty of their dreams."},
-    {"author": "Roy Mustang", "anime": "Fullmetal Alchemist: Brotherhood", "quote": "It's not wrong to dream. But you have to work hard to make it come true."},
-    {"author": "Sasuke Uchiha", "anime": "Naruto", "quote": "I understand now. Even if I must take the devil’s fruit, I must gain power. I am an avenger."},
-    {"author": "Killua Zoldyck", "anime": "Hunter x Hunter", "quote": "When I say it doesn’t hurt me, that means I can bear it."},
-    {"author": "Madara Uchiha", "anime": "Naruto Shippuden", "quote": "Wake up to reality! Nothing ever goes as planned in this accursed world."},
-    {"author": "Naruto Uzumaki", "anime": "Naruto", "quote": "Hard work is worthless for those that don’t believe in themselves."},
-    {"author": "Zero Two", "anime": "Darling in the Franxx", "quote": "I'm the happiest when I'm with you."},
-    {"author": "Saitama", "anime": "One Punch Man", "quote": "I’m not a hero because I want your approval. I do it because I want to."},
-    {"author": "Vegeta", "anime": "Dragon Ball Z", "quote": "Push through the pain. Giving up hurts more."},
-    {"author": "Eren Yeager", "anime": "Attack on Titan", "quote": "If you win, you live. If you lose, you die. If you don’t fight, you can’t win!"},
-    {"author": "Yusuke Urameshi", "anime": "Yu Yu Hakusho", "quote": "A lesson learned the hard way is a lesson remembered."},
-    {"author": "Gintoki Sakata", "anime": "Gintama", "quote": "The country? The sky? I don’t give a damn. I’ll protect my friends."},
-    {"author": "Ash Ketchum", "anime": "Pokemon", "quote": "A Caterpie may change into a Butterfree, but the heart that beats inside remains the same."},
-    {"author": "Vash the Stampede", "anime": "Trigun", "quote": "The ticket to the future is always open."},
-    {"author": "Ichigo Kurosaki", "anime": "Bleach", "quote": "If you give up now, you’re the one who lost."},
-    {"author": "Reigen Arataka", "anime": "Mob Psycho 100", "quote": "You’re not special. But that’s okay."},
-    {"author": "Homura Akemi", "anime": "Puella Magi Madoka Magica", "quote": "No matter how many times I repeat this, I’ll save you."},
-    {"author": "Kakashi Hatake", "anime": "Naruto", "quote": "In the ninja world, those who break the rules are scum, but those who abandon their friends are worse than scum."},
-    {"author": "All Might", "anime": "My Hero Academia", "quote": "It’s not bad to dream. But you also have to consider what’s realistic."},
-    {"author": "Shoyo Hinata", "anime": "Haikyuu!!", "quote": "The future belongs to those who believe in the beauty of their dreams."},
-    {"author": "Makunouchi Ippo", "anime": "Hajime no Ippo", "quote": "It’s not about winning or losing, it’s about the effort."},
-    {"author": "Shinji Ikari", "anime": "Neon Genesis Evangelion", "quote": "I mustn’t run away. I mustn’t run away."},
-    {"author": "Kaneki Ken", "anime": "Tokyo Ghoul", "quote": "It’s not the world that’s messed up; it’s those of us in it."},
-    {"author": "Holo", "anime": "Spice and Wolf", "quote": "When you are experienced, you can become overly confident and such confidence can prove fatal."},
-    {"author": "Erwin Smith", "anime": "Attack on Titan", "quote": "The only thing we're allowed to do is believe. We can't change anything."},
-    {"author": "Tomoya Okazaki", "anime": "Clannad", "quote": "You should enjoy the little detours. Because that’s where you’ll find the things more important than what you want."},
-    {"author": "Saber", "anime": "Fate/Stay Night", "quote": "I am the bone of my sword."},
-    {"author": "Himura Kenshin", "anime": "Rurouni Kenshin", "quote": "You can always die. It’s living that takes real courage."},
-    {"author": "Dazai Osamu", "anime": "Bungou Stray Dogs", "quote": "No matter how deep the night, it always turns to day, eventually."},
-    {"author": "Natsu Dragneel", "anime": "Fairy Tail", "quote": "Power isn’t determined by your size, but by the size of your heart and dreams."},
-    {"author": "Hachiman Hikigaya", "anime": "My Teen Romantic Comedy SNAFU", "quote": "Loneliness is a kind of freedom."},
-    {"author": "Alucard", "anime": "Hellsing", "quote": "The only thing you and I have in common is that we’re both monsters."},
-    {"author": "Yoruichi Shihouin", "anime": "Bleach", "quote": "A lesson learned the hard way is a lesson remembered."},
-    {"author": "Kaori Miyazono", "anime": "Your Lie in April", "quote": "Maybe there’s only a dark road up ahead. But you still have to believe and keep going."},
-    {"author": "Inuyasha", "anime": "Inuyasha", "quote": "I want to be with you. Now and forever."},
-    {"author": "Shanks", "anime": "One Piece", "quote": "By experiencing both, victory and defeat, running away and shedding tears, a man will become a man."},
-    {"author": "Rem", "anime": "Re:Zero", "quote": "Even if you’re weak, there are times when you can do things only because you’re weak."},
-    {"author": "Gojou Satoru", "anime": "Jujutsu Kaisen", "quote": "Throughout heaven and earth, I alone am the honored one."},
-    {"author": "Shigeo Kageyama", "anime": "Mob Psycho 100", "quote": "It's okay to run away if it means staying true to yourself."},
-    {"author": "Kamina", "anime": "Gurren Lagann", "quote": "Believe in the you that believes in yourself."}
+    {
+        "author": "Vegeta",
+        "anime": "Dragon Ball Z",
+        "quote": "Push through the pain. Giving up hurts more."
+    },
+    {
+        "author": "Saitama",
+        "anime": "One Punch Man",
+        "quote": "I’m just a guy who’s a hero for fun."
+    },
+    {
+        "author": "Kakashi Hatake",
+        "anime": "Naruto",
+        "quote": "The next generation will always surpass the previous one. It’s one of the never-ending cycles in life."
+    },
+    {
+        "author": "Yusuke Urameshi",
+        "anime": "Yu Yu Hakusho",
+        "quote": "A lesson learned the hard way is a lesson remembered."
+    },
+    {
+        "author": "Gon Freecss",
+        "anime": "Hunter x Hunter",
+        "quote": "When I say it doesn’t hurt me, that means I can bear it."
+    },
+    {
+        "author": "Shoyo Hinata",
+        "anime": "Haikyuu!!",
+        "quote": "The future belongs to those who believe in the beauty of their dreams."
+    },
+    {
+        "author": "Rintarou Okabe",
+        "anime": "Steins;Gate",
+        "quote": "Remember, no matter how many parallel worlds exist, you only live in this one."
+    },
+    {
+        "author": "Yato",
+        "anime": "Noragami",
+        "quote": "The pain of being forgotten is worse than death."
+    },
+    {
+        "author": "Eren Yeager",
+        "anime": "Attack on Titan",
+        "quote": "If you win, you live. If you lose, you die. If you don’t fight, you can’t win."
+    },
+    {
+        "author": "Roy Mustang",
+        "anime": "Fullmetal Alchemist: Brotherhood",
+        "quote": "It’s not wrong to dream. But you have to make it come true."
+    },
+    {
+        "author": "Reigen Arataka",
+        "anime": "Mob Psycho 100",
+        "quote": "You’re not special. Work hard and don’t expect shortcuts."
+    },
+    {
+        "author": "Gintoki Sakata",
+        "anime": "Gintama",
+        "quote": "The country? The sky? The people? Screw it all. I protect my friends."
+    },
+    {
+        "author": "Ichigo Kurosaki",
+        "anime": "Bleach",
+        "quote": "We are all like fireworks. We climb, shine, and always go our separate ways and become further apart."
+    },
+    {
+        "author": "Killua Zoldyck",
+        "anime": "Hunter x Hunter",
+        "quote": "I’m so tired of killing. I just want to be a kid."
+    },
+    {
+        "author": "Tomoya Okazaki",
+        "anime": "Clannad",
+        "quote": "You should enjoy the little detours. Because that's where you'll find the things more important than what you want."
+    },
+    {
+        "author": "Rukia Kuchiki",
+        "anime": "Bleach",
+        "quote": "We stand in awe before that which cannot be seen. And we respect, with every fiber of our being, that which cannot be explained."
+    },
+    {
+        "author": "Sebastian Michaelis",
+        "anime": "Black Butler",
+        "quote": "I am simply one hell of a butler."
+    },
+    {
+        "author": "Kenshin Himura",
+        "anime": "Rurouni Kenshin",
+        "quote": "A sword is a weapon. The art of swordsmanship is learning how to kill. That is the truth."
+    },
+    {
+        "author": "Zero Two",
+        "anime": "Darling in the Franxx",
+        "quote": "If you’re gonna be my darling, you better be ready for anything."
+    },
+    {
+        "author": "Rem",
+        "anime": "Re:Zero",
+        "quote": "You are my hero."
+    },
+    {
+        "author": "Meliodas",
+        "anime": "The Seven Deadly Sins",
+        "quote": "No matter what lies you tell, you can’t fool your own heart."
+    },
+    {
+        "author": "Shigeo Kageyama",
+        "anime": "Mob Psycho 100",
+        "quote": "It’s okay to run away. But don’t give up."
+    },
+    {
+        "author": "Holo",
+        "anime": "Spice and Wolf",
+        "quote": "When you are experienced in something, whether it's war or love, you stop being afraid."
+    },
+    {
+        "author": "Saber",
+        "anime": "Fate/Stay Night",
+        "quote": "Even if I am the last one standing, I will fight for what I believe in."
+    },
+    {
+        "author": "Monkey D. Luffy",
+        "anime": "One Piece",
+        "quote": "If you don’t take risks, you can’t create a future."
+    },
+    {
+        "author": "Himura Kenshin",
+        "anime": "Rurouni Kenshin",
+        "quote": "The strong live and the weak die. That’s the way the world works."
+    },
+    {
+        "author": "Ryuk",
+        "anime": "Death Note",
+        "quote": "You humans are so... interesting."
+    },
+    {
+        "author": "Shikamaru Nara",
+        "anime": "Naruto",
+        "quote": "A lesson learned the hard way is a lesson remembered."
+    },
+    {
+        "author": "Erza Scarlet",
+        "anime": "Fairy Tail",
+        "quote": "Fear is not evil. It tells you what your weakness is. And once you know your weakness, you can become stronger as well as kinder."
+    },
+    {
+        "author": "Kaname Kuran",
+        "anime": "Vampire Knight",
+        "quote": "The heart is something that cannot be seen, but it is something that must be protected."
+    },
+    {
+        "author": "Shoto Todoroki",
+        "anime": "My Hero Academia",
+        "quote": "Never forget who you want to become."
+    },
+    {
+        "author": "Vash the Stampede",
+        "anime": "Trigun",
+        "quote": "The ticket to the future is always open."
+    },
+    {
+        "author": "Hajime Hinata",
+        "anime": "Danganronpa",
+        "quote": "Even if the future is uncertain, you can keep moving forward as long as you trust yourself."
+    },
+    {
+        "author": "Kurisu Makise",
+        "anime": "Steins;Gate",
+        "quote": "Theories are nothing more than words. Accept what you’ve seen."
+    },
+    {
+        "author": "Yami Sukehiro",
+        "anime": "Black Clover",
+        "quote": "Surpass your limits. Right here. Right now!"
+    },
+    {
+        "author": "Akame",
+        "anime": "Akame ga Kill!",
+        "quote": "No matter how many good deeds you perform, your past sins cannot be erased."
+    },
+    {
+        "author": "Trafalgar Law",
+        "anime": "One Piece",
+        "quote": "You can’t see the whole picture until you look at it from the outside."
+    },
+    {
+        "author": "Mirajane Strauss",
+        "anime": "Fairy Tail",
+        "quote": "Fear isn’t evil. It only allows us to learn our own weaknesses."
+    },
+    {
+        "author": "Sasuke Uchiha",
+        "anime": "Naruto Shippuden",
+        "quote": "I understand now. Even if I must take the devil’s fruit, I must gain power. I am an avenger."
+    },
+    {
+        "author": "Rika Furude",
+        "anime": "Higurashi: When They Cry",
+        "quote": "You can’t change the past, but you can learn from it."
+    },
+    {
+        "author": "Hange Zoe",
+        "anime": "Attack on Titan",
+        "quote": "Ever since I was a child, I’ve always wanted to see a Titan up close."
+    },
+    {
+        "author": "L Lawliet",
+        "anime": "Death Note",
+        "quote": "Being alone is better than being with the wrong person."
+    },
+    {
+        "author": "Chrollo Lucilfer",
+        "anime": "Hunter x Hunter",
+        "quote": "The only thing we're allowed to do is believe. We can't change anything."
+    },
+    {
+        "author": "Kaori Miyazono",
+        "anime": "Your Lie in April",
+        "quote": "Maybe there’s only a dark road up ahead. But you still have to believe and keep going."
+    },
+    {
+        "author": "Inuyasha",
+        "anime": "Inuyasha",
+        "quote": "I want to be with you. Now and forever."
+    },
+    {
+        "author": "Yuji Itadori",
+        "anime": "Jujutsu Kaisen",
+        "quote": "I don’t know how I’ll feel when I’m dead. But I don’t want to regret the way I lived."
+    },
+    {
+        "author": "Shinra Kusakabe",
+        "anime": "Fire Force",
+        "quote": "I want to be a hero, so I can protect people."
+    },
+    {
+        "author": "Koro Sensei",
+        "anime": "Assassination Classroom",
+        "quote": "The difference between the novice and the master is that the master has failed more times than the novice has tried."
+    }
 ]
