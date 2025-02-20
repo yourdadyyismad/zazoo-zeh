@@ -36,7 +36,9 @@ router.get('/', async (req, res) => {
             CREATOR: "DRACULA",
             SUCCESS: false,
             ERROR: error.message
-        });
+        })
+    };
+        
 });
 
 module.exports = router;
