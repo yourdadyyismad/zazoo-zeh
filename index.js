@@ -21,11 +21,9 @@ app.get('/', (req, res) => {
 });
 
 const aniQuotes = require('./api/aniQuotes');
+const hentaiAPI = require('./api/hentai')
 
 app.use('/api/aniQuotes', aniQuotes);
-
-
-const hentaiAPI = require('./api/hentai')
 
 app.use('/api/hentai', hentaiAPI);
 
