@@ -17,7 +17,7 @@ console.log("Title:", title);
         console.log("chai")
     }
 
-    const publish = await page.$eval('.entry-date'), el => el.innerText);
+    const publish = await page.$eval('.entry-date', el => el.innerText);
     const videoSrc = await page.$eval('video.wp-block-video', el => el.getAttribute('src'));
 
     console.log("released:", publish);
