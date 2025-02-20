@@ -8,14 +8,20 @@ const puppeteer = require('puppeteer-core');
     });
 
     const page = await browser.newPage();
-    await page.goto('https://github.com/suhail');
+    await page.goto('https://sfmcompile.club/?redirect_to=random');
 
     try {
-const title = await page.$eval('.p-name.vcard-fullname.d-block.overflow-hidden', el => el.innerText);
+const title = await page.$eval('.g1-mega.g1-mega-1st.entry-title', el => el.innerText);
 console.log("Title:", title);
     } catch(error) {
         console.log("chai")
     }
+
+    const publish = await page.$eval('.entry-date'), el => el.innerText);
+    const videoSrc = await page.$eval('video.wp-block-video', el => el.getAttribute('src'));
+
+    console.log("released:", publish);
+    console.log("VideoSrc:", videoSrc);
     
     await browser.close();
 })();
