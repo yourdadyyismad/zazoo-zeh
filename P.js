@@ -18,10 +18,16 @@ console.log("Title:", title);
     }
 
     const publish = await page.$eval('.entry-date', el => el.innerText);
-    const videoSrc = await page.$eval('video.wp-block-video', el => el.getAttribute('src'));
-
     console.log("released:", publish);
-    console.log("VideoSrc:", videoSrc);
+
+    
+    try {
+    const videoSrc = await page.$eval('figure.wp-block-video video', el => el.getAttribute('src'));
+    console.log("Video Source:", videoSrc);
+} catch (error) {
+    console.log("Video not found:", error);
+}
+    
     
     await browser.close();
 })();
