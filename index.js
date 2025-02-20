@@ -3,6 +3,7 @@ const ytdl = require('ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const axios = require('axios');
 const pw = require('playwright');
