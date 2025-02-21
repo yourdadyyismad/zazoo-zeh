@@ -10,24 +10,23 @@ const puppeteer = require('puppeteer-core');
     const page = await browser.newPage();
     await page.goto('https://sfmcompile.club/?redirect_to=random');
 
-    try {
-const title = await page.$eval('.g1-mega.g1-mega-1st.entry-title', el => el.innerText);
-console.log("Title:", title);
-    } catch(error) {
-        console.log("chai")
-    }
-
-    const publish = await page.$eval('.entry-date', el => el.innerText);
-    console.log("released:", publish);
-
     
+    await page.waitForSelector('#main');
+    console.log('Page Opened Successfully ✅');
+
+    const title = await page.$eval('h2.page-title', el => el.innerText);
+console.log("Title:", title);
+
+
+    const thumbnail = await page.$eval('img.src'. el => el.innerText);
+    console.log("Image:", thumbnail);
+
     try {
-    const videoSrc = await page.$eval('figure.wp-block-video video', el => el.getAttribute('src'));
+    const videoSrc = await page.$eval('video > source', el => el.getAttribute('src'));
     console.log("Video Source:", videoSrc);
 } catch (error) {
-    console.log("Video not found:", error);
-}
-    
+    console.log("Video source not found:", error);
+    }
     
     await browser.close();
 })();
