@@ -1,8 +1,6 @@
-name: Docker Build and Deploy
+name: Build and Deploy
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -10,16 +8,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GH_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
+      - name: Download Dockerfile
+        run: |
+          curl -o Dockerfile https://huggingface.co/spaces/draculaZxy/xyzdrac/blob/main/Dockerfile
 
-    - name: Build Docker Image
-      run: docker build -t my-app .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Run Docker Container
-      run: docker run -d -p 7860:7860 my-app
+      - name: Build Docker image
+        run: docker build -t my-app .
+
+      - name: Push Docker image (Optional)
+        run: echo "Image built successfully!"
