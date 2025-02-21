@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer-core');
-const URL = 'https://www.xvideos.com/video.otmpkih88ac/sweet_horny_asaba_runs_babe_fucks_for_free_house_rent'
+
 (async () => {
+    const URL = 'https://www.xvideos.com/video.otmpkih88ac/sweet_horny_asaba_runs_babe_fucks_for_free_house_rent';
+    
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: '/usr/bin/chromium', // Make sure this points to the installed Chromium
