@@ -20,7 +20,7 @@ const puppeteer = require('puppeteer-core');
 console.log("Title:", title);
 
 
-    const thumbnail = await page.$eval('img.src', el => el.innerText);
+    const thumbnail = await page.$eval('img', el => el.getAttribute('src'));
     console.log("Image:", thumbnail);
 
     try {
