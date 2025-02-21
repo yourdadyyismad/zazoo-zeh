@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer-core');
-
+const URL = 'https://www.xvideos.com/video.otmpkih88ac/sweet_horny_asaba_runs_babe_fucks_for_free_house_rent'
 (async () => {
     const browser = await puppeteer.launch({
         headless: true,
@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer-core');
     });
 
     const page = await browser.newPage();
-    await page.goto('https://sfmcompile.club/?redirect_to=random');
+    await page.goto(URL, { waitUntil: 'domcontentloaded' });
 
     
     await page.waitForSelector('#main');
