@@ -3,10 +3,8 @@ const ytdl = require('ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer-core');
 const cheerio = require('cheerio');
 const axios = require('axios');
-const pw = require('playwright');
 const yts = require('yt-search');
 
 ////////////////////////////////////>>>>>>>>>>>>>>>>>>>>>>>
@@ -21,13 +19,23 @@ app.get('/', (req, res) => {
 });
 
 const aniQuotes = require('./api/aniQuotes');
-const hentaiAPI = require('./api/hentai')
 
 app.use('/api/aniQuotes', aniQuotes);
 
+
+const hentaiAPI = require('./api/hentai')
+
 app.use('/api/hentai', hentaiAPI);
+
+
+
+const test = require('./api/xnxx')
+
+
+
+app.use('/api/xnxx', test);
+
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
