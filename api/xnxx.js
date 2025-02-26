@@ -28,16 +28,16 @@ router.get('/', async (req, res) => {
 
         // Extract data using Puppeteer instead of Cheerio
         const result = await page.evaluate(() => {
-            const firstVideoElement = document.querySelector('.thumb-block .thumb a');
-            const firstImageElement = document.querySelector('.thumb-block .thumb img');
-            const videoPreviewElement = document.querySelector('.videopv video');
+    const firstVideoElement = document.querySelector('.mozaique.thumb-block.thumb a');
+    const firstImageElement = document.querySelector('.mozaique.thumb-block.thumb img');
+    const videoPreviewElement = document.querySelector('.mozaique.thumb-block.videopv video');
 
-            return {
-                videoUrl: firstVideoElement ? `https://www.xvideos.com${firstVideoElement.getAttribute('href')}` : null,
-                thumbnail: firstImageElement ? firstImageElement.getAttribute('data-src') || firstImageElement.getAttribute('src') : null,
-                videoPreview: videoPreviewElement ? videoPreviewElement.getAttribute('src') : null
-            };
-        });
+    return {
+        videoUrl: firstVideoElement ? `https://www.xvideos.com${firstVideoElement.getAttribute('href')}` : null,
+        thumbnail: firstImageElement ? firstImageElement.getAttribute('data-src') || firstImageElement.getAttribute('src') : null,
+        videoPreview: videoPreviewElement ? videoPreviewElement.getAttribute('src') : null
+    };
+});
 
         // Close Puppeteer
         await browser.close();
