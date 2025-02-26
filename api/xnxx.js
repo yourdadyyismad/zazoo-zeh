@@ -16,7 +16,11 @@ router.get('/', async (req, res) => {
         const searchUrl = `https://www.xvideos.com/?k=${formattedQuery}`;
 
         // Launch Puppeteer
-        const browser = await puppeteer.launch({ headless: "new" });
+        const browser = await puppeteer.launch({
+        headless: true,
+        executablePath: '/usr/bin/chromium', // Make sure this points to the installed Chromium
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
         const page = await browser.newPage();
 
         // Navigate to search URL
