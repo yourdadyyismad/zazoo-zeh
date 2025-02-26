@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apis = [
+    const apis = [
         {
             name: "Anime Quotes API",
             description: "Fetches a random anime quote with its author and anime title.",
@@ -9,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
             name: "Hentai API",
             description: "Retrives A Random hentai Video.",
             endpoint: "/api/hentai"
+        },
+                {
+            name: "Xvideosi API",
+            description: "Retrives A Random Xvideo Detail.",
+            endpoint: "/api/xnxx"
         }
     ];
 
