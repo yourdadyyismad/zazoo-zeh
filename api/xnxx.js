@@ -28,9 +28,9 @@ router.get('/', async (req, res) => {
 
         // Extract data using Puppeteer instead of Cheerio
         const result = await page.evaluate(() => {
-    const firstVideoElement = document.querySelector('.thumb-block.thumb a');
-    const firstImageElement = document.querySelector('.thumb-block.thumb img');
-    const videoPreviewElement = document.querySelector('.thumb-block.videopv video');
+    const firstVideoElement = document.querySelector('.thumb-block .thumb a');
+    const firstImageElement = document.querySelector('.thumb-block .thumb img');
+    const videoPreviewElement = document.querySelector('.thumb-block .videopv video');
 
     return {
         videoUrl: firstVideoElement ? `https://www.xvideos.com${firstVideoElement.getAttribute('href')}` : null,
