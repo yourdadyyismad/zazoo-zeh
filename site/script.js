@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apis = [
-    const apis = [
         {
             name: "Anime Quotes API",
             description: "Fetches a random anime quote with its author and anime title.",
