@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
         const result = await page.evaluate(() => {
             const firstVideoElement = document.querySelector('.thumb-block .thumb a');
             const firstImageElement = document.querySelector('.thumb-block .thumb img');
-            const videoPreviewElement = document.querySelector('.thumb .videopv video');
+            const videoPreviewElement = document.querySelector('.videopv video');
 
             return {
                 videoUrl: firstVideoElement ? `https://www.xvideos.com${firstVideoElement.getAttribute('href')}` : null,
