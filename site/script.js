@@ -21,7 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
             description: `Retrives The Video Format And Details Of A Given Song Name
             Using (?q=Faded+Alan+Walker) As The Parameter`,
             endpoint: "/api/Ytmp4"
-                }
+                },
+                {
+            name: "YtSearch API",
+            description: `Retrives Multiple Song Details Using (?q=Faded+Alan+Walker) As The Parameter`,
+            endpoint: "/api/ytsearch"
+        }
     ];
 
     const apiContainer = document.getElementById('api-container');
