@@ -9,13 +9,19 @@ const router = express.Router();
 // Function to check file size
 async function getFileSize(url) {
     try {
-        const response = await axios.head(url); // Get headers
-        const size = response.headers["content-length"];
+        let response = await axios.head(url);
+        let size = response.headers['content-length'];
 
-        return size ? `${(size / (1024 * 1024)).toFixed(2)} MB` : "Unknown";
+        if (!size) {
+            // Try GET request with byte range
+            response = await axios.get(url, { headers: { Range: "bytes=0-999" } });
+            size = response.headers['content-range']?.split("/")[1];
+        }
+
+        return size ? `${(size / (1024 * 1024)).toFixed(2)} MB` : "Could not determine size";
     } catch (error) {
-        console.error("Error fetching MP3 file size:", error.message);
-        return "Unknown";
+        console.error("Error fetching file size:", error.message);
+        return "Could not determine size";
     }
 }
 
