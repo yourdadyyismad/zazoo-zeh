@@ -32,6 +32,9 @@ app.use('/api/Ytmp3', Ytmp3);
 const Ytmp4 = require('./api/Ytmp4')
 app.use('/api/Ytmp4', Ytmp4);
 
+const ytSearch = require('./api/ytsearch');
+app.use('/api/ytsearch', ytSearch);
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
