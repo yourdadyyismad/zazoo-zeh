@@ -11,10 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
             endpoint: "/api/hentai"
         },
                 {
-            name: "Xvideosi API",
-            description: "Retrives A Random Xvideo Detail.",
-            endpoint: "/api/xnxx"
-        }
+            name: "Ytmp3 API",
+            description: `Retrives The Audio Format And Details Of A Given Song Name
+            Using (?q=Faded+Alan+Walker) As The Parameter`,
+            endpoint: "/api/Ytmp3"
+        },
+        {
+            name: "Ytmp4 API",
+            description: `Retrives The Video Format And Details Of A Given Song Name
+            Using (?q=Faded+Alan+Walker) As The Parameter`,
+            endpoint: "/api/Ytmp4"
+                }
     ];
 
     const apiContainer = document.getElementById('api-container');
