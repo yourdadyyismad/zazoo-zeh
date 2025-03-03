@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
             uploaded: video.ago,
             views: video.views,
             author: video?.author?.name || "Unknown",
+            thumbnail: video.thumbnail,  // Added Thumbnail
             source: video.url
         }));
 
