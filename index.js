@@ -27,6 +27,11 @@ const hentaiAPI = require('./api/hentai')
 
 app.use('/api/hentai', hentaiAPI);
 
+const Ytmp3 = require('./api/Ytmp3')
+app.use('/api/Ytmp3', Ytmp3);
+const Ytmp4 = require('./api/Ytmp4')
+app.use('api/Ytmp4', Ytmp4);
+
 
 
 const test = require('./api/xnxx')
