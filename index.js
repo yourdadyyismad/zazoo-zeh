@@ -41,6 +41,9 @@ app.use('/api/Text', TEXT);
 const ytSearch = require('./api/ytsearch');
 app.use('/api/ytsearch', ytSearch);
 
+const MOVIE = require('./api/Movie');
+app.use('/api/Movie', MOVIE);
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
