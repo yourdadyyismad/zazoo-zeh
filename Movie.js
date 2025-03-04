@@ -108,7 +108,7 @@ const scrapeNkiri = async (query) => {
 };
 
 // Route: GET /nkiri/movie?query=moana
-router.get("/movie", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const { query } = req.query;
         if (!query) return res.status(400).json({ error: "Movie query is required" });
