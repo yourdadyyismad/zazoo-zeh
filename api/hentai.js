@@ -5,8 +5,8 @@ const cheerio = require("cheerio");
 const router = express.Router();
 
 const launchOptions = {
-    headless: true,
-    executablePath: "/usr/bin/chromium", // Your Chromium path
+    headless: "new",  // Avoids headless detection
+    executablePath: "/usr/bin/chromium",
     args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -27,8 +27,16 @@ router.get("/", async (req, res) => {
         const browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
 
+        // Set a mobile user agent
+        await page.setUserAgent(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/537.36"
+        );
+
         console.log("Opening TikTok video page...");
         await page.goto(videoURL, { waitUntil: "networkidle2" });
+
+        // Wait for video element to load
+        await page.waitForSelector("video", { timeout: 10000 });
 
         // Extract page content
         const html = await page.content();
@@ -42,7 +50,7 @@ router.get("/", async (req, res) => {
 
         if (!videoElement) {
             await browser.close();
-            return res.status(404).json({ error: "Failed to find video URL" });
+            return res.status(404).json({ error: "Failed to find TikTok video URL" });
         }
 
         console.log("Extracting no-watermark video URL...");
