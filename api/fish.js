@@ -14,15 +14,16 @@ router.get("/", async (req, res) => {
     try {
         console.log("Launching browser...");
         const browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-accelerated-2d-canvas",
-                "--disable-gpu",
-            ],
-        });
+    headless: true,
+    executablePath: "/usr/bin/chromium", // Your custom path
+    args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--disable-gpu",
+    ],
+});
 
         const page = await browser.newPage();
 
