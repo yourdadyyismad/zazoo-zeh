@@ -1,56 +1,69 @@
 const express = require("express");
 const puppeteer = require("puppeteer-core");
+const cheerio = require("cheerio");
 
 const router = express.Router();
 
-// Nkiri Movie Search & Download Scraper
-router.get("/", async (req, res) => {
-    try {
-        const { movie } = req.query;
-        if (!movie) return res.status(400).json({ error: "Please provide a movie name" });
+// Chromium executable path
+const CHROMIUM_PATH = "/usr/bin/chromium";
 
-        const browser = await puppeteer.launch({
-            headless: true,
-            executablePath: "/usr/bin/chromium", // Custom Chromium Path
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
-        });
+// Function to scrape Nkiri
+const scrapeNkiri = async (query) => {
+    const browser = await puppeteer.launch({
+        executablePath: CHROMIUM_PATH,
+        headless: true
+    });
 
-        const page = await browser.newPage();
-        await page.goto(`https://nkiri.com/?s=${encodeURIComponent(movie)}`, { waitUntil: "domcontentloaded" });
+    const page = await browser.newPage();
+    const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
 
-        // Extract movie links from search results
-        const movies = await page.evaluate(() => {
-            return Array.from(document.querySelectorAll(".post-title a")).map(link => ({
-                title: link.innerText.trim(),
-                url: link.href
-            }));
-        });
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(".search-entry-title a");
 
-        if (movies.length === 0) {
-            await browser.close();
-            return res.status(404).json({ error: "No movies found" });
-        }
+    // Extract the first search result link
+    const searchHtml = await page.content();
+    const $ = cheerio.load(searchHtml);
+    const firstResult = $(".search-entry-title a").first();
+    const movieTitle = firstResult.text().trim();
+    const movieLink = firstResult.attr("href");
 
-        // Open first movie result (you can modify this to let users choose)
-        await page.goto(movies[0].url, { waitUntil: "domcontentloaded" });
-
-        // Extract Download Links
-        const downloadLinks = await page.evaluate(() => {
-            return Array.from(document.querySelectorAll("a[href*='download']"))
-                .map(link => ({
-                    quality: link.innerText.trim(),
-                    url: link.href
-                }));
-        });
-
+    if (!movieLink) {
         await browser.close();
+        return { error: "Movie not found" };
+    }
 
-        res.json({
-            movie: movies[0].title,
-            pageUrl: movies[0].url,
-            downloadLinks: downloadLinks.length ? downloadLinks : "No download links found"
-        });
+    // Go to the movie page
+    await page.goto(movieLink, { waitUntil: "domcontentloaded" });
 
+    // Extract description
+    await page.waitForSelector(".elementor-widget-text-editor p");
+    const description = await page.evaluate(() => {
+        return document.querySelector(".elementor-widget-text-editor p")?.innerText || "No description available";
+    });
+
+    // Get the download link
+    await page.waitForSelector(".elementor-button-wrapper a");
+    const downloadLink = await page.evaluate(() => {
+        return document.querySelector(".elementor-button-wrapper a")?.href || "No download link found";
+    });
+
+    await browser.close();
+
+    return {
+        title: movieTitle,
+        description,
+        download_link: downloadLink
+    };
+};
+
+// Route: GET /nkiri/movie?query=moana
+router.get("/movie", async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ error: "Movie query is required" });
+
+        const movieData = await scrapeNkiri(query);
+        res.json(movieData);
     } catch (error) {
         res.status(500).json({ error: "Something went wrong", details: error.message });
     }
