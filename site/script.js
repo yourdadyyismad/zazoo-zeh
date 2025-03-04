@@ -36,7 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
             name: "Text API",
             description: `Changes The Given Text To Different Styles Using (?text=Dracula) As The Parameter`,
             endpoint: "/api/Text"
-     }
+     },
+     {
+            name: "Movie API",
+            description: `Gets A Movie Details Based of The Given Query  Using (?query=moana 2) As The Parameter`,
+            endpoint: "/api/Movie"
+    }
     ];
 
     const apiContainer = document.getElementById('api-container');
