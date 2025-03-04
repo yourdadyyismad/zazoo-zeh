@@ -22,10 +22,9 @@ const aniQuotes = require('./api/aniQuotes');
 
 app.use('/api/aniQuotes', aniQuotes);
 
-const Fish = require('./api/fish');
-app.use = ('/api/fish', Fish);
+const hentaiAPI = require('./api/hentai')
 
-
+app.use('/api/hentai', hentaiAPI);
 
 
 const Ytmp3 = require('./api/Ytmp3')
