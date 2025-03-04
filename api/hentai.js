@@ -7,7 +7,7 @@ const router = express.Router();
 // Chromium executable path
 const CHROMIUM_PATH = "/usr/bin/chromium";
 
-// Function to scrape Nkiri and get the final download link
+// Function to scrape Nkiri and get the final movie link
 const scrapeNkiri = async (query) => {
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
@@ -55,14 +55,17 @@ const scrapeNkiri = async (query) => {
     // Go to the download page
     await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
 
-    // Click the "Create download link" button
+    // Click the "Create Download Link" button
     await page.waitForSelector(".btext");
     await page.click(".btext");
 
-    // Wait for the final download link to appear
-    await page.waitForTimeout(5000); // Wait to allow the download link to generate
+    // Wait for the final download link to generate
+    await page.waitForTimeout(5000);
+
+    // Extract the final download link
     const finalDownloadLink = await page.evaluate(() => {
-        const downloadAnchor = document.querySelector("a[href*='.mkv'], a[href*='.mp4']");
+        // Find any link containing ".mkv"
+        const downloadAnchor = [...document.querySelectorAll("a")].find(a => a.href.includes("FROM.NKIRI.COM.mkv"));
         return downloadAnchor ? downloadAnchor.href : "Final download link not found";
     });
 
