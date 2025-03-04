@@ -3,12 +3,11 @@ const puppeteer = require("puppeteer-core");
 const cheerio = require("cheerio");
 
 const router = express.Router();
-
-// Chromium executable path
 const CHROMIUM_PATH = "/usr/bin/chromium";
 
 // Function to scrape Nkiri and get the final movie link
 const scrapeNkiri = async (query) => {
+    console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
         headless: true
@@ -17,86 +16,99 @@ const scrapeNkiri = async (query) => {
     const page = await browser.newPage();
     const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
 
-    await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector(".search-entry-title a");
+    try {
+        console.log(`Navigating to: ${searchUrl}`);
+        await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+        await page.waitForSelector(".search-entry-title a", { timeout: 10000 });
 
-    // Extract the first search result link
-    const searchHtml = await page.content();
-    const $ = cheerio.load(searchHtml);
-    const firstResult = $(".search-entry-title a").first();
-    const movieTitle = firstResult.text().trim();
-    const movieLink = firstResult.attr("href");
+        const searchHtml = await page.content();
+        const $ = cheerio.load(searchHtml);
+        const firstResult = $(".search-entry-title a").first();
+        const movieTitle = firstResult.text().trim();
+        const movieLink = firstResult.attr("href");
 
-    if (!movieLink) {
-        await browser.close();
-        return { error: "Movie not found" };
-    }
+        if (!movieLink) {
+            console.error("Movie link not found.");
+            await browser.close();
+            return { error: "Movie not found" };
+        }
 
-    // Go to the movie page
-    await page.goto(movieLink, { waitUntil: "domcontentloaded" });
+        console.log(`Movie found: ${movieTitle} | Link: ${movieLink}`);
+        await page.goto(movieLink, { waitUntil: "domcontentloaded" });
 
-    // Extract description
-    await page.waitForSelector("div.elementor-element-cb5d89d p");
-    const description = await page.evaluate(() => {
-        return document.querySelector("div.elementor-element-cb5d89d p")?.innerText.trim() || "No description available";
-    });
+        // Extract description
+        await page.waitForSelector("div.elementor-element-cb5d89d p", { timeout: 10000 });
+        const description = await page.evaluate(() => {
+            return document.querySelector("div.elementor-element-cb5d89d p")?.innerText.trim() || "No description available";
+        });
 
-    // Get the intermediate download page link
-    await page.waitForSelector(".elementor-button-wrapper a");
-    const downloadLink = await page.evaluate(() => {
-        return document.querySelector(".elementor-button-wrapper a")?.href || "No download link found";
-    });
+        console.log(`Description found: ${description}`);
 
-    if (!downloadLink.startsWith("http")) {
-        await browser.close();
-        return { title: movieTitle, description, download_link: "Invalid download link" };
-    }
+        // Get the intermediate download page link
+        await page.waitForSelector(".elementor-button-wrapper a", { timeout: 10000 });
+        const downloadLink = await page.evaluate(() => {
+            return document.querySelector(".elementor-button-wrapper a")?.href || "No download link found";
+        });
 
-    // Go to the intermediate download page
-    await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
+        if (!downloadLink.startsWith("http")) {
+            console.error("Invalid download link.");
+            await browser.close();
+            return { title: movieTitle, description, download_link: "Invalid download link" };
+        }
 
-    // Click the "Create Download Link" button
-    await page.waitForSelector(".btext");
-    await page.click(".btext");
+        console.log(`Navigating to download page: ${downloadLink}`);
+        await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
 
-    // **Wait for the final download link using a Promise**
-    const finalDownloadLink = await new Promise(async (resolve, reject) => {
-        try {
-            let tries = 0;
-            let maxTries = 10; // Try up to 10 times
+        // Click the "Create Download Link" button
+        await page.waitForSelector(".btext", { timeout: 10000 });
+        await page.click(".btext");
 
-            while (tries < maxTries) {
-                await page.waitForTimeout(2000); // Wait 2 seconds before checking
+        console.log("Clicked 'Create Download Link' button. Waiting for final link...");
 
-                // Look for a link that starts with `https://dweds11.downloadwella`
-                const foundLink = await page.evaluate(() => {
-                    const anchor = [...document.querySelectorAll("a")].find(a =>
-                        a.href.includes("downloadwella") && a.href.endsWith(".mkv")
-                    );
-                    return anchor ? anchor.href : null;
-                });
+        // **Wait for the final download link using a Promise**
+        const finalDownloadLink = await new Promise(async (resolve, reject) => {
+            try {
+                let tries = 0;
+                let maxTries = 10;
 
-                if (foundLink) {
-                    resolve(foundLink);
-                    return;
+                while (tries < maxTries) {
+                    await page.waitForTimeout(3000); // Wait 3 seconds
+
+                    const foundLink = await page.evaluate(() => {
+                        const anchor = [...document.querySelectorAll("a")].find(a =>
+                            a.href.includes("downloadwella") && a.href.endsWith(".mkv")
+                        );
+                        return anchor ? anchor.href : null;
+                    });
+
+                    if (foundLink) {
+                        console.log(`Final download link found: ${foundLink}`);
+                        resolve(foundLink);
+                        return;
+                    }
+
+                    console.log(`Retry ${tries + 1}/${maxTries}: Still waiting...`);
+                    tries++;
                 }
 
-                tries++;
+                reject("Final download link not found.");
+            } catch (error) {
+                reject(error);
             }
+        });
 
-            reject("Final download link not found");
-        } catch (error) {
-            reject(error);
-        }
-    });
+        await browser.close();
 
-    await browser.close();
-
-    return {
-        title: movieTitle,
-        description,
-        download_link: finalDownloadLink
-    };
+        return {
+            title: movieTitle,
+            description,
+            download_link: finalDownloadLink
+        };
+    } catch (error) {
+        console.error("Error during scraping:", error.message);
+        await browser.close();
+        return { error: "Something went wrong", details: error.message };
+    }
 };
 
 // Route: GET /nkiri/movie?query=moana
@@ -108,6 +120,7 @@ router.get("/movie", async (req, res) => {
         const movieData = await scrapeNkiri(query);
         res.json(movieData);
     } catch (error) {
+        console.error("Server error:", error.message);
         res.status(500).json({ error: "Something went wrong", details: error.message });
     }
 });
