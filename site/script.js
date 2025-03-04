@@ -31,7 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
             name: "Wikipedia API",
             description: `Retrives The Given Query Results From Wikipedia Using The Format (?q=Albert Einstein) As The Parameter`,
             endpoint: "/api/Wiki"
-        }
+        },
+        {
+            name: "Text API",
+            description: `Changes The Given Text To Different Styles Using (?text=Dracula) As The Parameter`,
+            endpoint: "/api/text"
+                }
     ];
 
     const apiContainer = document.getElementById('api-container');
