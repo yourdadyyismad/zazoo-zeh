@@ -26,9 +26,7 @@ const Fish = require('./api/fish');
 app.use = ('/api/fish', Fish);
 
 
-const hentaiAPI = require('./api/hentai')
 
-app.use('/api/hentai', hentaiAPI);
 
 const Ytmp3 = require('./api/Ytmp3')
 app.use('/api/Ytmp3', Ytmp3);
