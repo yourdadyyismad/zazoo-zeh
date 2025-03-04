@@ -10,7 +10,7 @@ const scrapeNkiri = async (query) => {
     console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
-        headless: false, // Set to false to see the browser in action
+        headless: true, // Set to false to see the browser in action
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
