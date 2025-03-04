@@ -9,9 +9,15 @@ const CHROMIUM_PATH = "/usr/bin/chromium";
 const scrapeNkiri = async (query) => {
     console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
-        executablePath: CHROMIUM_PATH,
-        headless: false // Change to false for debugging
-    });
+    executablePath: CHROMIUM_PATH,
+    headless: false, // Set this to true for headless mode
+    args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage", 
+        "--remote-debugging-port=9222"
+    ]
+});
 
     const page = await browser.newPage();
     const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
