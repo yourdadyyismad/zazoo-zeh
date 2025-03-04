@@ -23,6 +23,7 @@
     "os": "^0.1.2",
     "path": "^0.12.7",
     "playwright": "^1.50.1",
+    "googlethis": "latest",
     "request-promise": "^4.2.6",
     "yt-search": "^2.12.1",
     "ytdl-core": "^4.11.5"
