@@ -35,10 +35,10 @@ const scrapeNkiri = async (query) => {
     // Go to the movie page
     await page.goto(movieLink, { waitUntil: "domcontentloaded" });
 
-    // Extract description
-    await page.waitForSelector(".elementor-widget-text-editor p");
+    // Extract description (More specific)
+    await page.waitForSelector("div.elementor-element-cb5d89d p");
     const description = await page.evaluate(() => {
-        return document.querySelector(".elementor-widget-text-editor p")?.innerText || "No description available";
+        return document.querySelector("div.elementor-element-cb5d89d p")?.innerText.trim() || "No description available";
     });
 
     // Get the download link
