@@ -10,8 +10,10 @@ router.get('/', async (req, res) => {
     try {
         // Fetch the Wikipedia summary
         const page = await wiki.summary(query);
+        const creator = "DRACULA"
 
         res.json({
+            CREATOR: creator,
             STATUS: 200,
             QUERY: query,
             TITLE: page.title,
