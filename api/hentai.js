@@ -1,46 +1,58 @@
-const express = require('express');
-const puppeteer = require('puppeteer-core');
+const express = require("express");
+const puppeteer = require("puppeteer-core");
 
 const router = express.Router();
-const BASE_URL = 'https://gogoanime3.net';
 
-async function getEpisodes(animeId) {
-    const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium',  // ✅ Set the custom Chromium path
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    const page = await browser.newPage();
-    await page.goto(`${BASE_URL}/category/${animeId}`, { waitUntil: 'load' });
-
-    const episodes = await page.evaluate(() => {
-        const episodeList = [];
-        document.querySelectorAll('.episode_related ul li a').forEach(el => {
-            episodeList.push({
-                epNum: el.innerText.trim(),
-                epId: el.getAttribute('href').split('/')[1]
-            });
-        });
-        return episodeList.reverse();
-    });
-
-    await browser.close();
-    return episodes;
-}
-
-// Route: Get Episodes of an Anime
-router.get('/', async (req, res) => {
-    const animeId = req.query.id;
-    if (!animeId) return res.status(400).json({ error: "No anime ID provided!" });
-
+// Nkiri Movie Search & Download Scraper
+router.get("/nkiri", async (req, res) => {
     try {
-        const episodes = await getEpisodes(animeId);
-        if (episodes.length === 0) return res.status(404).json({ error: "No episodes found!" });
+        const { movie } = req.query;
+        if (!movie) return res.status(400).json({ error: "Please provide a movie name" });
 
-        res.json(episodes);
+        const browser = await puppeteer.launch({
+            headless: true,
+            executablePath: "/usr/bin/chromium", // Custom Chromium Path
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+
+        const page = await browser.newPage();
+        await page.goto(`https://nkiri.com/?s=${encodeURIComponent(movie)}`, { waitUntil: "domcontentloaded" });
+
+        // Extract movie links from search results
+        const movies = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll(".post-title a")).map(link => ({
+                title: link.innerText.trim(),
+                url: link.href
+            }));
+        });
+
+        if (movies.length === 0) {
+            await browser.close();
+            return res.status(404).json({ error: "No movies found" });
+        }
+
+        // Open first movie result (you can modify this to let users choose)
+        await page.goto(movies[0].url, { waitUntil: "domcontentloaded" });
+
+        // Extract Download Links
+        const downloadLinks = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll("a[href*='download']"))
+                .map(link => ({
+                    quality: link.innerText.trim(),
+                    url: link.href
+                }));
+        });
+
+        await browser.close();
+
+        res.json({
+            movie: movies[0].title,
+            pageUrl: movies[0].url,
+            downloadLinks: downloadLinks.length ? downloadLinks : "No download links found"
+        });
+
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch episodes", details: error.message });
+        res.status(500).json({ error: "Something went wrong", details: error.message });
     }
 });
 
