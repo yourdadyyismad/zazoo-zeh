@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             name: "Text API",
             description: `Changes The Given Text To Different Styles Using (?text=Dracula) As The Parameter`,
-            endpoint: "/api/Text"
+            endpoint: "/api/Text/?text=Dracula
                 }
     ];
 
