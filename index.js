@@ -32,6 +32,9 @@ app.use('/api/Ytmp3', Ytmp3);
 const Ytmp4 = require('./api/Ytmp4')
 app.use('/api/Ytmp4', Ytmp4);
 
+const Wikipedia = require('./api/Wiki');
+app.use('/api/Wiki', Wikipedia);
+
 const ytSearch = require('./api/ytsearch');
 app.use('/api/ytsearch', ytSearch);
 
