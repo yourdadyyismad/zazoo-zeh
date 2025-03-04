@@ -108,16 +108,28 @@ const scrapeNkiri = async (query) => {
 };
 
 // Route: GET /nkiri/movie?query=moana
+// Route: GET /nkiri/movie?query=moana
 router.get("/", async (req, res) => {
     try {
         const { query } = req.query;
         if (!query) return res.status(400).json({ error: "Movie query is required" });
 
         const movieData = await scrapeNkiri(query);
-        res.json(movieData);
+
+        // Add creator and status to the response
+        res.json({
+            CREATOR: "DRACULA",
+            STATUS: 200,
+            ...movieData, // Spread the movie data here
+        });
     } catch (error) {
         console.error("❌ Server error:", error.message);
-        res.status(500).json({ error: "Something went wrong", details: error.message });
+        res.status(500).json({ 
+            CREATOR: "DRACULA",
+            STATUS: 500,
+            error: "Something went wrong", 
+            details: error.message 
+        });
     }
 });
 
