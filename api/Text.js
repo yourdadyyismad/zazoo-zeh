@@ -26,7 +26,7 @@ const rot13 = (str) => str.replace(/[a-zA-Z]/g, (c) =>
 const emojifyText = (str) => str.split('').map(c => `🅰️🅱️🅲️🅳️🅴️🅵️🅶️🅷️🅸️🅹️🅺️🅻️🅼️🅽️🅾️🅿️🆀️🆁️🆂️🆃️🆄️🆅️🆆️🆇️🆈️🆉️`.charAt(c.toLowerCase().charCodeAt(0) - 97) || c).join('');
 
 // API Route
-router.get('/text-transform', (req, res) => {
+router.get('/', (req, res) => {
     const text = req.query.text;
 
     if (!text) {
