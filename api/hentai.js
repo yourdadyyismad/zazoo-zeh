@@ -10,7 +10,7 @@ const scrapeNkiri = async (query) => {
     console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
-        headless: true
+        headless: false // Change to false for debugging
     });
 
     const page = await browser.newPage();
@@ -63,40 +63,38 @@ const scrapeNkiri = async (query) => {
         await page.waitForSelector(".btext", { timeout: 10000 });
         await page.click(".btext");
 
-        console.log("Clicked 'Create Download Link' button. Waiting for the form submission...");
+        console.log("Clicked 'Create Download Link' button. Waiting for navigation...");
 
-        // **Wait for the final download link to appear**
-        const finalDownloadLink = await new Promise(async (resolve, reject) => {
-            try {
-                let tries = 0;
-                let maxTries = 10;
+        // **Wait for the final download page to load**
+        await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 15000 }).catch(() => console.log("No navigation detected. Checking manually..."));
 
-                while (tries < maxTries) {
-                    await page.waitForTimeout(3000); // Wait 3 seconds
-
-                    const foundLink = await page.evaluate(() => {
-                        const anchor = [...document.querySelectorAll("a")].find(a =>
-                            a.href.includes("downloadwella.com/d/") && a.href.endsWith(".mkv")
-                        );
-                        return anchor ? anchor.href : null;
-                    });
-
-                    if (foundLink) {
-                        console.log(`Final download link found: ${foundLink}`);
-                        resolve(foundLink);
-                        return;
-                    }
-
-                    console.log(`Retry ${tries + 1}/${maxTries}: Still waiting...`);
-                    tries++;
-                }
-
-                reject("Final download link not found.");
-            } catch (error) {
-                reject(error);
-            }
+        // **Extract the final download link**
+        let finalDownloadLink = await page.evaluate(() => {
+            const anchor = [...document.querySelectorAll("a")].find(a =>
+                a.href.includes("downloadwella.com/d/") && a.href.endsWith(".mkv")
+            );
+            return anchor ? anchor.href : null;
         });
 
+        if (!finalDownloadLink) {
+            console.log("Final link not found in initial check. Retrying...");
+            await page.waitForTimeout(5000); // Wait more time for slow loading elements
+
+            finalDownloadLink = await page.evaluate(() => {
+                const anchor = [...document.querySelectorAll("a")].find(a =>
+                    a.href.includes("downloadwella.com/d/") && a.href.endsWith(".mkv")
+                );
+                return anchor ? anchor.href : null;
+            });
+        }
+
+        if (!finalDownloadLink) {
+            console.error("Final download link still not found.");
+            await browser.close();
+            return { title: movieTitle, description, download_link: "No final link found" };
+        }
+
+        console.log(`Final download link found: ${finalDownloadLink}`);
         await browser.close();
 
         return {
