@@ -10,7 +10,7 @@ const scrapeNkiri = async (query) => {
     console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
-        headless: true,
+        headless: false, // Set to false to see the browser in action
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
@@ -65,32 +65,37 @@ const scrapeNkiri = async (query) => {
         console.log(`Navigating to download page: ${downloadLink}`);
         await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
 
-        // Click the "Create Download Link" button
-        await page.waitForSelector(".btext", { timeout: 10000 });
-        await page.click(".btext");
-
-        console.log("Clicked 'Create Download Link' button. Monitoring network requests...");
-
-        // **Capture the final download link from network requests**
+        // Monitor all network requests
         let finalDownloadLink = null;
+        page.on("request", (request) => {
+            console.log(`➡️ REQUEST: ${request.url()}`);
+        });
+
         page.on("response", async (response) => {
             const url = response.url();
+            console.log(`⬅️ RESPONSE: ${url}`);
+
             if (url.includes("downloadwella.com/d/") && url.endsWith(".mkv")) {
                 finalDownloadLink = url;
-                console.log(`Final download link detected: ${finalDownloadLink}`);
+                console.log(`✅ Final Download Link Detected: ${finalDownloadLink}`);
             }
         });
 
-        // **Wait for the download request**
-        await page.waitForTimeout(8000); // Allow time for request capture
+        // Click the "Create Download Link" button
+        await page.waitForSelector(".btext", { timeout: 10000 });
+        await page.click(".btext");
+        console.log("Clicked 'Create Download Link' button. Waiting...");
+
+        // Wait for possible new requests
+        await page.waitForTimeout(15000); // Allow enough time to capture the request
 
         if (!finalDownloadLink) {
-            console.error("Final download link not found.");
+            console.error("❌ Final download link not found.");
             await browser.close();
             return { title: movieTitle, description, download_link: "No final link found" };
         }
 
-        console.log(`Final download link found: ${finalDownloadLink}`);
+        console.log(`🎉 Final Download Link Found: ${finalDownloadLink}`);
         await browser.close();
 
         return {
@@ -99,7 +104,7 @@ const scrapeNkiri = async (query) => {
             download_link: finalDownloadLink
         };
     } catch (error) {
-        console.error("Error during scraping:", error.message);
+        console.error("❌ Error during scraping:", error.message);
         await browser.close();
         return { error: "Something went wrong", details: error.message };
     }
