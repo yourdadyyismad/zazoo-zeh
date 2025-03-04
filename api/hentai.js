@@ -4,7 +4,7 @@ const puppeteer = require("puppeteer-core");
 const router = express.Router();
 
 // Nkiri Movie Search & Download Scraper
-router.get("/nkiri", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const { movie } = req.query;
         if (!movie) return res.status(400).json({ error: "Please provide a movie name" });
