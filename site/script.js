@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             name: "Wikipedia API",
             description: `Retrives The Given Query Results From Wikipedia Using The Format (?q=Albert Einstein) As The Parameter`,
-            endpoint: "/api/Ytmp4"
+            endpoint: "/api/Wiki"
         }
     ];
 
