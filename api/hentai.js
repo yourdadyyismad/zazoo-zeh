@@ -10,7 +10,7 @@ const scrapeNkiri = async (query) => {
     console.log(`Starting scrape for: ${query}`);
     const browser = await puppeteer.launch({
     executablePath: CHROMIUM_PATH,
-    headless: false, // Set this to true for headless mode
+    headless: true, // Set this to true for headless mode
     args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
