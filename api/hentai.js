@@ -7,7 +7,7 @@ const router = express.Router();
 // Chromium executable path
 const CHROMIUM_PATH = "/usr/bin/chromium";
 
-// Function to scrape Nkiri
+// Function to scrape Nkiri and get the final download link
 const scrapeNkiri = async (query) => {
     const browser = await puppeteer.launch({
         executablePath: CHROMIUM_PATH,
@@ -35,7 +35,7 @@ const scrapeNkiri = async (query) => {
     // Go to the movie page
     await page.goto(movieLink, { waitUntil: "domcontentloaded" });
 
-    // Extract description (More specific)
+    // Extract description
     await page.waitForSelector("div.elementor-element-cb5d89d p");
     const description = await page.evaluate(() => {
         return document.querySelector("div.elementor-element-cb5d89d p")?.innerText.trim() || "No description available";
@@ -47,12 +47,31 @@ const scrapeNkiri = async (query) => {
         return document.querySelector(".elementor-button-wrapper a")?.href || "No download link found";
     });
 
+    if (!downloadLink.startsWith("http")) {
+        await browser.close();
+        return { title: movieTitle, description, download_link: "Invalid download link" };
+    }
+
+    // Go to the download page
+    await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
+
+    // Click the "Create download link" button
+    await page.waitForSelector(".btext");
+    await page.click(".btext");
+
+    // Wait for the final download link to appear
+    await page.waitForTimeout(5000); // Wait to allow the download link to generate
+    const finalDownloadLink = await page.evaluate(() => {
+        const downloadAnchor = document.querySelector("a[href*='.mkv'], a[href*='.mp4']");
+        return downloadAnchor ? downloadAnchor.href : "Final download link not found";
+    });
+
     await browser.close();
 
     return {
         title: movieTitle,
         description,
-        download_link: downloadLink
+        download_link: finalDownloadLink
     };
 };
 
