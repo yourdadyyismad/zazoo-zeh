@@ -41,7 +41,7 @@ const scrapeNkiri = async (query) => {
         return document.querySelector("div.elementor-element-cb5d89d p")?.innerText.trim() || "No description available";
     });
 
-    // Get the download link
+    // Get the intermediate download page link
     await page.waitForSelector(".elementor-button-wrapper a");
     const downloadLink = await page.evaluate(() => {
         return document.querySelector(".elementor-button-wrapper a")?.href || "No download link found";
@@ -52,21 +52,42 @@ const scrapeNkiri = async (query) => {
         return { title: movieTitle, description, download_link: "Invalid download link" };
     }
 
-    // Go to the download page
+    // Go to the intermediate download page
     await page.goto(downloadLink, { waitUntil: "domcontentloaded" });
 
     // Click the "Create Download Link" button
     await page.waitForSelector(".btext");
     await page.click(".btext");
 
-    // Wait for the final download link to generate
-    await page.waitForTimeout(5000);
+    // **Wait for the final download link using a Promise**
+    const finalDownloadLink = await new Promise(async (resolve, reject) => {
+        try {
+            let tries = 0;
+            let maxTries = 10; // Try up to 10 times
 
-    // Extract the final download link
-    const finalDownloadLink = await page.evaluate(() => {
-        // Find any link containing ".mkv"
-        const downloadAnchor = [...document.querySelectorAll("a")].find(a => a.href.includes("FROM.NKIRI.COM.mkv"));
-        return downloadAnchor ? downloadAnchor.href : "Final download link not found";
+            while (tries < maxTries) {
+                await page.waitForTimeout(2000); // Wait 2 seconds before checking
+
+                // Look for a link that starts with `https://dweds11.downloadwella`
+                const foundLink = await page.evaluate(() => {
+                    const anchor = [...document.querySelectorAll("a")].find(a =>
+                        a.href.includes("downloadwella") && a.href.endsWith(".mkv")
+                    );
+                    return anchor ? anchor.href : null;
+                });
+
+                if (foundLink) {
+                    resolve(foundLink);
+                    return;
+                }
+
+                tries++;
+            }
+
+            reject("Final download link not found");
+        } catch (error) {
+            reject(error);
+        }
     });
 
     await browser.close();
