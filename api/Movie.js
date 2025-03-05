@@ -10,7 +10,7 @@ const BASE_URL = "https://www.tokyoinsider.com/anime";
 async function launchBrowser() {
     return await puppeteer.launch({
         headless: true,
-        executablePath: "/usr/bin/google-chrome-stable",
+        executablePath: "/usr/bin/chromium",
         args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 }
