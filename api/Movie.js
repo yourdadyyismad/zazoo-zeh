@@ -105,19 +105,15 @@ const scrapeNkiri = async (query) => {
 };
 
 // ✅ Improved function to scrape all episodes
-const scrapeEpisode = async (query) => { 
+const scrapeEpisode = async (query) => {
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
-        // Extract the season name by removing "EpXX" if present
-        const baseQuery = query.replace(/Ep\d+/, "").trim();
-        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(baseQuery)}&post_type=post`;
-
-        console.log(`🌐 Fetching search results for: ${baseQuery}`);
+        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
-        // Get the first result (assuming it's the correct season page)
+        // Extract the first result
         const firstResult = $(".search-entry-title a").first();
         const showTitle = firstResult.text().trim();
         const showLink = firstResult.attr("href");
@@ -129,58 +125,43 @@ const scrapeEpisode = async (query) => {
 
         console.log(`📺 Show Found: ${showTitle} | Link: ${showLink}`);
 
-        // Fetch the season page
+        // Get the episode page
         const { data: showHtml } = await axios.get(showLink);
         const showPage = cheerio.load(showHtml);
 
-        let episodes = [];
+        let episodeDownloadLink = null;
+        let episodeNumber = query.match(/(\d+)$/)?.[1]; // Extract number from query
 
-        // Extract all available episodes
-        showPage(".elementor-button-wrapper a").each((_, element) => {
-            const downloadHref = showPage(element).attr("href");
-            const episodeText = showPage(element).closest("section").find("h2").text().trim();
+        if (!episodeNumber) {
+            console.error("❌ Invalid episode format.");
+            return { error: "Invalid episode format" };
+        }
 
-            if (downloadHref && episodeText) {
-                const episodeNumberMatch = episodeText.match(/(\d+)/); // Extract number
-                const episodeNumber = episodeNumberMatch ? episodeNumberMatch[0] : null;
+        console.log(`🔍 Looking for Episode ${episodeNumber}...`);
 
-                if (episodeNumber) {
-                    episodes.push({
-                        episode: episodeNumber,
-                        download_link: downloadHref
-                    });
-                }
+        // Search for the episode heading and get the corresponding download link
+        showPage("section.elementor-section").each((_, element) => {
+            const episodeTitle = showPage(element).find("h2.elementor-heading-title").text().trim();
+            const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
+
+            if (episodeTitle.includes(`Episode ${episodeNumber}`)) {
+                episodeDownloadLink = downloadHref;
+                return false; // Stop looping once found
             }
         });
 
-        if (episodes.length === 0) {
-            console.error("❌ No episodes found.");
-            return { error: "No episodes found" };
+        if (!episodeDownloadLink) {
+            console.error(`❌ Episode ${episodeNumber} not found.`);
+            return { error: `Episode ${episodeNumber} not found` };
         }
 
-        // If the query is for a specific episode like "S01Ep01"
-        if (query.toLowerCase().includes("ep")) {
-            const episodeNumber = query.match(/Ep(\d+)/)?.[1]; // Extract requested episode number
-            const specificEpisode = episodes.find(ep => ep.episode === episodeNumber);
+        console.log(`✅ Episode ${episodeNumber} Link Found: ${episodeDownloadLink}`);
 
-            if (!specificEpisode) {
-                console.error(`❌ Episode ${episodeNumber} not found.`);
-                return { error: `Episode ${episodeNumber} not found` };
-            }
-
-            console.log(`✅ Episode ${episodeNumber} Link Found: ${specificEpisode.download_link}`);
-
-            return {
-                title: showTitle,
-                episode: episodeNumber,
-                download_link: specificEpisode.download_link
-            };
-        }
-
-        // If only the season was searched for, return all episodes
-        console.log(`✅ Returning all ${episodes.length} episodes.`);
-        return { title: showTitle, episodes };
-
+        return {
+            title: showTitle,
+            episode: `Episode ${episodeNumber}`,
+            download_link: episodeDownloadLink
+        };
     } catch (error) {
         console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
