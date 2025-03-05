@@ -6,8 +6,8 @@ const router = express.Router();
 
 async function scrapeSaveTube(videoUrl) {
     const browser = await puppeteer.launch({
-        headless: false, // Set to true in production
-        executablePath: "/usr/bin/google-chrome", // Change based on OS
+        headless: true, // Set to true in production
+        executablePath: "/usr/bin/chromium", // Change based on OS
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
