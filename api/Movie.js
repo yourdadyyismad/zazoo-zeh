@@ -105,7 +105,7 @@ const scrapeNkiri = async (query) => {
 };
 
 // ✅ Improved function to scrape all episodes
-const scrapeEpisode = async (query) => {
+  const scrapeEpisode = async (query) => {
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
@@ -113,9 +113,8 @@ const scrapeEpisode = async (query) => {
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
-        // Extract the first result
+        // Extract the first search result
         const firstResult = $(".search-entry-title a").first();
-        const showTitle = firstResult.text().trim();
         const showLink = firstResult.attr("href");
 
         if (!showLink) {
@@ -123,50 +122,47 @@ const scrapeEpisode = async (query) => {
             return { error: "Show not found" };
         }
 
-        console.log(`📺 Show Found: ${showTitle} | Link: ${showLink}`);
+        console.log(`📺 Found Show Link: ${showLink}`);
 
-        // Get the episode page
+        // Load the show's page
         const { data: showHtml } = await axios.get(showLink);
         const showPage = cheerio.load(showHtml);
 
         let episodeDownloadLink = null;
-        let episodeNumber = query.match(/(\d+)$/)?.[1]; // Extract number from query
+        let foundEpisodeTitle = null;
 
-        if (!episodeNumber) {
-            console.error("❌ Invalid episode format.");
-            return { error: "Invalid episode format" };
-        }
-
-        console.log(`🔍 Looking for Episode ${episodeNumber}...`);
-
-        // Search for the episode heading and get the corresponding download link
+        // Extract the correct episode
         showPage("section.elementor-section").each((_, element) => {
             const episodeTitle = showPage(element).find("h2.elementor-heading-title").text().trim();
             const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
 
-            if (episodeTitle.includes(`Episode ${episodeNumber}`)) {
-                episodeDownloadLink = downloadHref;
-                return false; // Stop looping once found
+            // Convert query to match "Episode X" format
+            const episodeMatch = query.match(/episode\s*(\d+)/i);
+            if (episodeMatch) {
+                const episodeNumber = episodeMatch[1];
+                if (episodeTitle.toLowerCase().includes(`episode ${episodeNumber}`)) {
+                    episodeDownloadLink = downloadHref;
+                    foundEpisodeTitle = episodeTitle;
+                    return false; // Stop looping once found
+                }
             }
         });
 
         if (!episodeDownloadLink) {
-            console.error(`❌ Episode ${episodeNumber} not found.`);
-            return { error: `Episode ${episodeNumber} not found` };
+            console.error("❌ Episode not found.");
+            return { error: "Episode not found" };
         }
 
-        console.log(`✅ Episode ${episodeNumber} Link Found: ${episodeDownloadLink}`);
+        console.log(`✅ Episode Found: ${foundEpisodeTitle} | Link: ${episodeDownloadLink}`);
 
-        return {
-            title: showTitle,
-            episode: `Episode ${episodeNumber}`,
-            download_link: episodeDownloadLink
-        };
+        return { title: foundEpisodeTitle, download_link: episodeDownloadLink };
     } catch (error) {
         console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
     }
 };
+
+
 // ✅ **New endpoint to get an episode**
 router.get("/episode", async (req, res) => {
     try {
