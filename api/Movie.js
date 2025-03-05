@@ -1,97 +1,198 @@
 const express = require("express");
 const puppeteer = require("puppeteer-core");
+const axios = require("axios");
 const cheerio = require("cheerio");
 
 const router = express.Router();
+const CHROMIUM_PATH = "/usr/bin/chromium";
 const BASE_URL = "https://www.tokyoinsider.com/anime";
 
-// Helper function to launch Puppeteer
-async function launchBrowser() {
-    return await puppeteer.launch({
-        headless: true,
-        executablePath: "/usr/bin/chromium",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
-}
-
-// Route to scrape anime episodes
-router.get("/", async (req, res) => {
-    const animeName = req.query.anime; // e.g., "Solo Leveling"
-    const episodeNumber = req.query.episode; // e.g., "1"
-
-    if (!animeName) {
-        console.log("❌ Missing 'anime' parameter");
-        return res.status(400).json({ error: "Parameter 'anime' is required" });
-    }
-
-    console.log(`🔍 Searching for anime: ${animeName}, Episode: ${episodeNumber || "All"}`);
+/**
+ * Scrape anime details from Tokyo Insider
+ */
+const scrapeAnime = async (query) => {
+    console.log(`🔍 Searching for Anime: ${query}`);
 
     try {
-        const browser = await launchBrowser();
+        const searchUrl = BASE_URL;
+        console.log(`🌍 Fetching search page: ${searchUrl}`);
+
+        // 🚀 Launch Puppeteer
+        const browser = await puppeteer.launch({
+            executablePath: CHROMIUM_PATH,
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+
         const page = await browser.newPage();
+        await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
 
-        // 1️⃣ Open the anime search page
-        console.log("🌍 Navigating to anime site...");
-        await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
-
-        // 2️⃣ Type anime name into the search bar
-        console.log(`⌨️ Typing search query: ${animeName}`);
-        await page.type("#search_box", animeName);
-
-        // 3️⃣ Wait for autocomplete and select the first result
+        // Type query into search box
+        console.log(`⌨️ Typing search query: ${query}`);
+        await page.type("#search_box", query);
         await page.waitForTimeout(3000);
-        const suggestionsExist = await page.$("ul li.ac_even, ul li.ac_odd");
 
-        if (suggestionsExist) {
-            console.log("✅ Suggestions found! Clicking the first one...");
-            await page.click("ul li.ac_even, ul li.ac_odd");
-        } else {
-            console.log("❌ No suggestions found, pressing Enter...");
-            await page.keyboard.press("Enter");
+        // Check for search results
+        const hasResults = await page.$("ul li.ac_even, ul li.ac_odd");
+
+        if (!hasResults) {
+            console.log("❌ No search suggestions found.");
+            await browser.close();
+            return { error: "Anime not found" };
         }
 
-        // 4️⃣ Wait for anime page to load
-        console.log("➡️ Redirected to anime page. Extracting episodes...");
+        // Click the first search result
+        console.log("✅ Clicking the first search result...");
+        await page.click("ul li.ac_even, ul li.ac_odd");
+
+        // Wait for episodes to load
         await page.waitForSelector(".episode a");
 
-        // 5️⃣ Scrape episode list
-        const animeContent = await page.content();
-        const $ = cheerio.load(animeContent);
+        // Scrape episode list
+        const animeHtml = await page.content();
+        const $ = cheerio.load(animeHtml);
 
         let episodes = [];
-        $(".episode a").each((i, el) => {
+        $(".episode a").each((_, el) => {
             const title = $(el).text().trim();
             const link = `https://www.tokyoinsider.com${$(el).attr("href")}`;
             episodes.push({ title, link });
         });
 
-        console.log(`✅ Found ${episodes.length} episodes`);
+        console.log(`✅ Found ${episodes.length} episodes.`);
         await browser.close();
 
-        // 6️⃣ If an episode is requested, find the exact match
-        if (episodeNumber) {
-            console.log(`🔍 Searching for episode ${episodeNumber}...`);
+        return { title: query, episodes };
+    } catch (error) {
+        console.error("❌ Error:", error.message);
+        return { error: "Something went wrong", details: error.message };
+    }
+};
 
-            const episode = episodes.find(e => 
-                new RegExp(`\\bepisode ${episodeNumber}\\b`, "i").test(e.title)
-            );
+/**
+ * Scrape anime episode download link
+ */
+const scrapeEpisode = async (query) => {
+    console.log(`🔍 Searching for Episode: ${query}`);
 
-            if (!episode) {
-                console.log(`❌ Episode ${episodeNumber} not found!`);
-                return res.status(404).json({ error: `Episode ${episodeNumber} not found` });
-            }
+    try {
+        // Extract anime title and episode number
+        const animeName = query.split(" S")[0];
+        const episodeMatch = query.match(/EP(\d+)/i);
+        if (!episodeMatch) {
+            console.error("❌ Invalid episode format.");
+            return { error: "Invalid episode format. Use S01EP01 format." };
+        }
+        const episodeNumber = parseInt(episodeMatch[1], 10);
+        console.log(`🎬 Anime: ${animeName}, Episode: ${episodeNumber}`);
 
-            console.log(`🎯 Episode found: ${episode.link}`);
+        // Scrape anime page first
+        const animeData = await scrapeAnime(animeName);
+        if (animeData.error) return animeData;
 
-            return res.json({ anime: animeName, episode: episode.title, link: episode.link });
+        // Find the specific episode link
+        const episode = animeData.episodes.find(e =>
+            new RegExp(`\\bepisode ${episodeNumber}\\b`, "i").test(e.title)
+        );
+
+        if (!episode) {
+            console.error(`❌ Episode ${episodeNumber} not found.`);
+            return { error: "Episode not found" };
         }
 
-        // Return all episodes if no specific one is requested
-        return res.json({ anime: animeName, episodes });
+        console.log(`📥 Navigating to episode page: ${episode.link}`);
 
+        // 🚀 Launch Puppeteer for download extraction
+        const browser = await puppeteer.launch({
+            executablePath: CHROMIUM_PATH,
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+
+        const page = await browser.newPage();
+        await page.goto(episode.link, { waitUntil: "domcontentloaded" });
+
+        // Scrape download links
+        const episodeHtml = await page.content();
+        const $ = cheerio.load(episodeHtml);
+
+        let downloadLinks = [];
+        $(".c_h2, .c_h2b").each((_, el) => {
+            const link = $("a", el).attr("href");
+            const sizeText = $(".finfo b", el).first().text();
+            const sizeMB = parseFloat(sizeText.replace(" MB", ""));
+
+            if (link && link.endsWith(".mkv") && !isNaN(sizeMB)) {
+                downloadLinks.push({ link, sizeMB });
+            }
+        });
+
+        await browser.close();
+
+        if (downloadLinks.length === 0) {
+            console.error("❌ No valid download links found.");
+            return { error: "No valid download links found" };
+        }
+
+        // Find the smallest file
+        const smallestFile = downloadLinks.reduce((prev, curr) =>
+            prev.sizeMB < curr.sizeMB ? prev : curr
+        );
+
+        console.log(`✅ Smallest file selected: ${smallestFile.link} (${smallestFile.sizeMB} MB)`);
+
+        return { title: episode.title, download_link: smallestFile.link };
     } catch (error) {
-        console.error("🚨 Error occurred:", error);
-        res.status(500).json({ error: "An error occurred while scraping" });
+        console.error("❌ Error:", error.message);
+        return { error: "Something went wrong", details: error.message };
+    }
+};
+
+// ✅ Anime search endpoint
+router.get("/", async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ error: "Anime query is required" });
+
+        const animeData = await scrapeAnime(query);
+
+        res.json({
+            CREATOR: "DRACULA",
+            STATUS: 200,
+            ...animeData
+        });
+    } catch (error) {
+        console.error("❌ Server error:", error.message);
+        res.status(500).json({
+            CREATOR: "DRACULA",
+            STATUS: 500,
+            error: "Something went wrong",
+            details: error.message
+        });
+    }
+});
+
+// ✅ Episode download endpoint
+router.get("/episode", async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ error: "Episode query is required" });
+
+        const episodeData = await scrapeEpisode(query);
+
+        res.json({
+            CREATOR: "DRACULA",
+            STATUS: 200,
+            ...episodeData
+        });
+    } catch (error) {
+        console.error("❌ Server error:", error.message);
+        res.status(500).json({
+            CREATOR: "DRACULA",
+            STATUS: 500,
+            error: "Something went wrong",
+            details: error.message
+        });
     }
 });
 
