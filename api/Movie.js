@@ -106,15 +106,28 @@ const scrapeNkiri = async (query) => {
 
 // ✅ Improved function to scrape all episodes
   const scrapeEpisode = async (query) => {
-    console.log(`🔍 Searching for Episode: ${query}`);
+    console.log(`🔍 Searching for: ${query}`);
 
     try {
-        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
+        // Extract episode number from query (e.g., "Solo Leveling S01EP01" -> "Episode 1")
+        const episodeMatch = query.match(/S\d+EP(\d+)/i);
+        if (!episodeMatch) {
+            console.error("❌ Invalid episode format.");
+            return { error: "Invalid episode format. Use S01EP01 format." };
+        }
+        const episodeNumber = parseInt(episodeMatch[1], 10);
+
+        // Search for the season
+        const searchQuery = query.replace(/S\d+EP\d+/i, "").trim();
+        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(searchQuery)}&post_type=post`;
+
+        console.log(`🌐 Fetching search results via Axios...`);
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
         // Extract the first search result
         const firstResult = $(".search-entry-title a").first();
+        const showTitle = firstResult.text().trim();
         const showLink = firstResult.attr("href");
 
         if (!showLink) {
@@ -122,59 +135,106 @@ const scrapeNkiri = async (query) => {
             return { error: "Show not found" };
         }
 
-        console.log(`📺 Found Show Link: ${showLink}`);
+        console.log(`📺 Show Found: ${showTitle} | Link: ${showLink}`);
 
-        // Load the show's page
+        // Load the season's page
+        console.log(`📄 Fetching show page via Axios...`);
         const { data: showHtml } = await axios.get(showLink);
         const showPage = cheerio.load(showHtml);
 
-        let episodeDownloadLink = null;
+        let episodeDownloadPage = null;
         let foundEpisodeTitle = null;
 
-        // Extract the correct episode
+        // Search for the correct episode section
         showPage("section.elementor-section").each((_, element) => {
             const episodeTitle = showPage(element).find("h2.elementor-heading-title").text().trim();
-            const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
+            const episodeDownloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
 
-            // Convert query to match "Episode X" format
-            const episodeMatch = query.match(/episode\s*(\d+)/i);
-            if (episodeMatch) {
-                const episodeNumber = episodeMatch[1];
-                if (episodeTitle.toLowerCase().includes(`episode ${episodeNumber}`)) {
-                    episodeDownloadLink = downloadHref;
-                    foundEpisodeTitle = episodeTitle;
-                    return false; // Stop looping once found
-                }
+            if (episodeTitle.toLowerCase() === `episode ${episodeNumber}`.toLowerCase()) {
+                episodeDownloadPage = episodeDownloadHref;
+                foundEpisodeTitle = `Solo.Leveling.S01E${String(episodeNumber).padStart(2, "0")}`;
+                return false; // Stop looping once found
             }
         });
 
-        if (!episodeDownloadLink) {
+        if (!episodeDownloadPage) {
             console.error("❌ Episode not found.");
             return { error: "Episode not found" };
         }
 
-        console.log(`✅ Episode Found: ${foundEpisodeTitle} | Link: ${episodeDownloadLink}`);
+        console.log(`📂 Episode Found: ${foundEpisodeTitle} | Navigating to download page: ${episodeDownloadPage}`);
 
-        return { title: foundEpisodeTitle, download_link: episodeDownloadLink };
+        // Open Puppeteer to navigate to the download link page
+        const browser = await puppeteer.launch({
+            executablePath: CHROMIUM_PATH,
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+        });
+
+        const page = await browser.newPage();
+        await page.goto(episodeDownloadPage, { waitUntil: "domcontentloaded" });
+
+        let finalDownloadLink = null;
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        page.on("response", async (response) => {
+            const url = response.url();
+            console.log(`🔄 Network Response: ${url}`);
+
+            if (url.includes("downloadwella.com/d/") && url.endsWith(".mkv")) {
+                finalDownloadLink = url;
+                console.log(`✅ Final Download Link: ${finalDownloadLink}`);
+            }
+        });
+
+        while (!finalDownloadLink && retryCount < maxRetries) {
+            console.log(`🔁 Attempt ${retryCount + 1}: Clicking 'Create Download Link'`);
+            await page.waitForSelector(".btext", { timeout: 10000 });
+            await page.click(".btext");
+
+            await page.waitForTimeout(3000);
+            const currentUrl = page.url();
+
+            if (!currentUrl.includes("downloadwella.com")) {
+                console.warn(`🚨 Ad detected! Going back and retrying...`);
+                await page.goBack();
+                await page.waitForTimeout(2000);
+            } else {
+                console.log(`📥 Valid page detected, waiting for final link...`);
+                await page.waitForTimeout(10000);
+            }
+
+            retryCount++;
+        }
+
+        await browser.close();
+
+        if (!finalDownloadLink) {
+            console.error("❌ Failed to get final link after retries.");
+            return { error: "No final link found" };
+        }
+
+        console.log(`🎉 Success! Final Download Link: ${finalDownloadLink}`);
+        return { title: foundEpisodeTitle, download_link: finalDownloadLink };
     } catch (error) {
         console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
     }
 };
 
+// ✅ New endpoint for getting an episode  
+router.get("/episode", async (req, res) => {  
+    try {  
+        const { query } = req.query;  
+        if (!query) return res.status(400).json({ error: "Episode query is required" });  
 
-// ✅ **New endpoint to get an episode**
-router.get("/episode", async (req, res) => {
-    try {
-        const { query } = req.query;
-        if (!query) return res.status(400).json({ error: "Episode query is required" });
-
-        const episodeData = await scrapeEpisode(query);
-        return res.json(episodeData);
-    } catch (error) {
-        console.error("❌ Error:", error.message);
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
+        const episodeData = await scrapeEpisode(query);  
+        return res.json(episodeData);  
+    } catch (error) {  
+        console.error("❌ Error:", error.message);  
+        return res.status(500).json({ error: "Internal Server Error" });  
+    }  
 });
 
 // ✅ **Existing endpoint for movies remains unchanged**
