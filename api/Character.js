@@ -27,6 +27,8 @@ async function getRandomCharacter() {
     }
 }
 
+const creator = "DRACULA"
+
 // Unified Endpoint: /anime
 router.get("/", async (req, res) => {
     const { type, name } = req.query;
@@ -39,16 +41,14 @@ router.get("/", async (req, res) => {
         const character = await getCharacterInfo(name);
         if (!character) return res.status(404).json({ error: "Character not found" });
 
+    
+
         return res.json({
+            CREATOR: creator,
+            STATUS: 200,
             name: character.name || "Unknown",
             image: character.images?.jpg?.image_url || "No image available",
             description: character.about || "No description available",
-            anime: character.anime?.map(a => a.anime.title) || ["No anime found"],
-            voice_actors: character.voices?.map(v => ({
-                language: v.language || "Unknown",
-                name: v.person.name || "Unknown",
-                image: v.person.images?.jpg?.image_url || "No image available",
-            })) || [],
         });
     }
 
@@ -57,6 +57,8 @@ router.get("/", async (req, res) => {
         if (!character) return res.status(500).json({ error: "Failed to fetch random character" });
 
         return res.json({
+            CREATOR: creator,
+            STATUS: 200,
             name: character.name || "Unknown",
             image: character.images?.jpg?.image_url || "No image available",
             description: character.about || "No description available",
