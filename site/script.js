@@ -1,48 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apis = [
-        {
-            name: "Anime Quotes API",
-            description: "Fetches a random anime quote with its author and anime title.",
-            endpoint: "/api/aniQuotes"
-        },
-        {
-            name: "Hentai API",
-            description: "Retrives A Random hentai Video.",
-            endpoint: "/api/hentai"
-        },
-                {
-            name: "Ytmp3 API",
-            description: `Retrives The Audio Format And Details Of A Given Song Name
-            Using (?q=Faded+Alan+Walker) As The Parameter`,
-            endpoint: "/api/Ytmp3"
-        },
-        {
-            name: "Ytmp4 API",
-            description: `Retrives The Video Format And Details Of A Given Song Name
-            Using (?q=Faded+Alan+Walker) As The Parameter`,
-            endpoint: "/api/Ytmp4"
-                },
-                {
-            name: "YtSearch API",
-            description: `Retrives Multiple Song Details Using (?q=Faded+Alan+Walker) As The Parameter`,
-            endpoint: "/api/ytsearch"
-        },
-        {
-            name: "Wikipedia API",
-            description: `Retrives The Given Query Results From Wikipedia Using The Format (?q=Albert Einstein) As The Parameter`,
-            endpoint: "/api/Wiki"
-        },
-        {
-            name: "Text API",
-            description: `Changes The Given Text To Different Styles Using (?text=Dracula) As The Parameter`,
-            endpoint: "/api/Text"
-     },
-     {
-            name: "Movie API",
-            description: `Gets A Movie Details Based of The Given Query  Using (?query=moana 2) As The Parameter`,
-            endpoint: "/api/Movie"
+    {
+        name: "Anime Quotes API",
+        description: "Fetches a random anime quote with its author and anime title.",
+        endpoint: "/api/aniQuotes"
+    },
+    {
+        name: "Hentai API",
+        description: "Retrieves a random hentai video.",
+        endpoint: "/api/hentai"
+    },
+    {
+        name: "Ytmp3 API",
+        description: `Retrieves the audio format and details of a given song name
+        using (?q=Faded+Alan+Walker) as the parameter.`,
+        endpoint: "/api/Ytmp3"
+    },
+    {
+        name: "Ytmp4 API",
+        description: `Retrieves the video format and details of a given song name
+        using (?q=Faded+Alan+Walker) as the parameter.`,
+        endpoint: "/api/Ytmp4"
+    },
+    {
+        name: "YtSearch API",
+        description: `Retrieves multiple song details using (?q=Faded+Alan+Walker) as the parameter.`,
+        endpoint: "/api/ytsearch"
+    },
+    {
+        name: "Wikipedia API",
+        description: `Retrieves search results from Wikipedia using the format (?q=Albert+Einstein) as the parameter.`,
+        endpoint: "/api/Wiki"
+    },
+    {
+        name: "Text API",
+        description: `Transforms the given text into different styles using (?text=Dracula) as the parameter.`,
+        endpoint: "/api/Text"
+    },
+    {
+        name: "Movie API",
+        description: `Fetches movie details based on the given query using (?query=moana+2) as the parameter.`,
+        endpoint: "/api/Movie"
+    },
+    {
+        name: "Anime Character API",
+        description: `Retrieves information about an anime character.  
+        - Use (?type=character&name=naruto) to search for a specific character.  
+        - Use (?type=random) to get a random anime character.`,
+        endpoint: "/api/Character"
     }
-    ];
+];
 
     const apiContainer = document.getElementById('api-container');
 
