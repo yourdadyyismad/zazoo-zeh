@@ -44,7 +44,7 @@ app.use('/api/ytsearch', ytSearch);
 const MOVIE = require('./api/Movie');
 app.use('/api/Movie', MOVIE);
 
-const CHARACTER = require('/.api/Character');
+const CHARACTER = require('./api/Character');
 app.use('/api/Character', CHARACTER);
 
 app.listen(PORT, () => {
