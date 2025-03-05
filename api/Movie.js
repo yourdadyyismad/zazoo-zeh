@@ -17,7 +17,7 @@ async function launchBrowser() {
 
 // Route to scrape the anime website
 router.get("/", async (req, res) => {
-    const query = req.query.q; // e.g., "Solo Leveling S01EP01"
+    const query = req.query.q; // e.g., "Attack on Titan S01EP01"
     
     if (!query) {
         console.log("❌ Missing query parameter 'q'");
@@ -41,90 +41,19 @@ router.get("/", async (req, res) => {
         console.log(`⌨️ Typing search query: ${animeName}`);
         await page.type("#search_box", animeName);
 
-        // 3️⃣ Wait for 3 seconds and check if autocomplete appears
+        // 3️⃣ Wait for suggestions to appear
         await page.waitForTimeout(3000);
         const suggestionsExist = await page.$("ul li.ac_even, ul li.ac_odd");
 
         if (suggestionsExist) {
             console.log("✅ Suggestions found! Clicking the first one...");
             await page.click("ul li.ac_even, ul li.ac_odd");
-
-            console.log("➡️ Redirected to anime page. Extracting episodes...");
-            await page.waitForSelector(".episode a");
-
-            // 4️⃣ Scrape episode list
-            const animeContent = await page.content();
-            const $$ = cheerio.load(animeContent);
-
-            let episodes = [];
-            $$(".episode a").each((i, el) => {
-                const title = $$(el).text().trim().toLowerCase();
-                const link = `https://www.tokyoinsider.com${$$(el).attr("href")}`;
-
-                // Exclude OVAs and Specials
-                if (!title.includes("ova") && !title.includes("special")) {
-                    episodes.push({ title, link });
-                }
-            });
-
-            console.log(`✅ Found ${episodes.length} valid episodes`);
-            await browser.close();
-
-            // If an episode number is provided, find and click on it
-            if (episodeNumber) {
-                const episode = episodes.find(e => e.title.includes(`episode ${episodeNumber}`));
-                if (!episode) {
-                    console.log(`❌ Episode ${episodeNumber} not found!`);
-                    return res.status(404).json({ error: `Episode ${episodeNumber} not found` });
-                }
-                console.log(`🎯 Episode found: ${episode.link}`);
-
-                // Open the episode page
-                console.log("🌍 Navigating to episode page...");
-                await page.goto(episode.link, { waitUntil: "domcontentloaded" });
-
-                // Extract download links
-                console.log("📥 Extracting download links...");
-                const episodeContent = await page.content();
-                const $$$ = cheerio.load(episodeContent);
-
-                let downloadLinks = [];
-                $$$(".c_h2, .c_h2b").each((i, el) => {
-                    const link = $$$("a", el).attr("href");
-                    const sizeText = $$$(".finfo b", el).first().text();
-                    const sizeMB = parseFloat(sizeText.replace(" MB", ""));
-
-                    if (link && link.endsWith(".mkv") && !isNaN(sizeMB)) {
-                        downloadLinks.push({ link, sizeMB });
-                    }
-                });
-
-                if (downloadLinks.length === 0) {
-                    console.log("❌ No valid download links found!");
-                    await browser.close();
-                    return res.status(404).json({ error: "No valid download links found" });
-                }
-
-                // Find the smallest file
-                console.log(`📊 Found ${downloadLinks.length} download links, selecting the smallest...`);
-                const smallestFile = downloadLinks.reduce((prev, curr) => (prev.sizeMB < curr.sizeMB ? prev : curr));
-
-                console.log(`✅ Smallest file selected: ${smallestFile.link} (${smallestFile.sizeMB} MB)`);
-
-                await browser.close();
-                return res.json({ episode: episode.title, download: smallestFile.link });
-            }
-
-            return res.json({ anime: animeName, episodes });
         } else {
-            console.log("❌ No suggestions found. Continuing normal search...");
+            console.log("❌ No suggestions found. Pressing Enter...");
             await page.keyboard.press("Enter");
-
-            // Wait for search results to load
             await page.waitForSelector(".c_h2 a");
-
-            // 5️⃣ Extract first anime result link
-            console.log("🔗 Extracting first search result...");
+            
+            // Extract first anime result link
             const content = await page.content();
             const $ = cheerio.load(content);
             const animeLink = $(".c_h2 a").first().attr("href");
@@ -138,51 +67,78 @@ router.get("/", async (req, res) => {
             const animePageUrl = `https://www.tokyoinsider.com${animeLink}`;
             console.log(`✅ Anime found: ${animePageUrl}`);
 
-            // 6️⃣ Navigate to the anime's page
-            console.log("🌍 Opening anime page...");
+            // Open anime page
             await page.goto(animePageUrl, { waitUntil: "domcontentloaded" });
+        }
 
-            // 7️⃣ Scrape the episode list
-            console.log("📜 Scraping episode list...");
-            const animeContent = await page.content();
-            const $$ = cheerio.load(animeContent);
+        // 4️⃣ Extract episode list
+        console.log("📜 Scraping episode list...");
+        const animeContent = await page.content();
+        const $$ = cheerio.load(animeContent);
 
-            let episodes = [];
-            $$(".episode a").each((i, el) => {
-                const title = $$(el).text().trim().toLowerCase();
-                const link = `https://www.tokyoinsider.com${$$(el).attr("href")}`;
+        let episodes = [];
+        $$(".episode a").each((i, el) => {
+            const title = $$(el).text().trim().toLowerCase();
+            const link = `https://www.tokyoinsider.com${$$(el).attr("href")}`;
 
-                // Exclude OVAs and Specials
-                if (!title.includes("ova") && !title.includes("special")) {
-                    episodes.push({ title, link });
+            // Remove unwanted links like "upload"
+            if (!title.includes("upload")) {
+                episodes.push({ title, link });
+            }
+        });
+
+        console.log(`✅ Found ${episodes.length} episodes`);
+
+        // 5️⃣ Find exact episode match
+        if (episodeNumber) {
+            const episode = episodes.find(e => e.title === `attack on titan episode ${episodeNumber}`);
+
+            if (!episode) {
+                console.log(`❌ Episode ${episodeNumber} not found!`);
+                await browser.close();
+                return res.status(404).json({ error: `Episode ${episodeNumber} not found` });
+            }
+
+            console.log(`🎯 Episode found: ${episode.link}`);
+
+            // 6️⃣ Navigate to episode page
+            console.log("🌍 Navigating to episode page...");
+            await page.goto(episode.link, { waitUntil: "domcontentloaded" });
+
+            // 🔟 Extract download links
+            console.log("📥 Extracting download links...");
+            const episodeContent = await page.content();
+            const $$$ = cheerio.load(episodeContent);
+
+            let downloadLinks = [];
+            $$$(".c_h2, .c_h2b").each((i, el) => {
+                const link = $$$("a", el).attr("href");
+                const sizeText = $$$(".finfo b", el).first().text();
+                const sizeMB = parseFloat(sizeText.replace(" MB", ""));
+
+                if (link && link.endsWith(".mkv") && !isNaN(sizeMB)) {
+                    downloadLinks.push({ link, sizeMB });
                 }
             });
 
-            if (episodes.length === 0) {
-                console.log("❌ No episodes found!");
+            if (downloadLinks.length === 0) {
+                console.log("❌ No valid download links found!");
                 await browser.close();
-                return res.status(404).json({ error: "No episodes found" });
+                return res.status(404).json({ error: "No valid download links found" });
             }
 
-            console.log(`✅ Found ${episodes.length} valid episodes`);
+            // 1️⃣1️⃣ Select the smallest file
+            console.log(`📊 Found ${downloadLinks.length} download links, selecting the smallest...`);
+            const smallestFile = downloadLinks.reduce((prev, curr) => (prev.sizeMB < curr.sizeMB ? prev : curr));
 
-            // 8️⃣ If episode number is provided, find and click on it
-            if (episodeNumber) {
-                const episode = episodes.find(e => e.title.includes(`episode ${episodeNumber}`));
-                if (!episode) {
-                    console.log(`❌ Episode ${episodeNumber} not found!`);
-                    await browser.close();
-                    return res.status(404).json({ error: `Episode ${episodeNumber} not found` });
-                }
-                console.log(`🎯 Episode found: ${episode.link}`);
+            console.log(`✅ Smallest file selected: ${smallestFile.link} (${smallestFile.sizeMB} MB)`);
 
-                // Click on the episode and return download link (same as before)
-            } else {
-                console.log("ℹ️ No specific episode requested, returning all episodes");
-                await browser.close();
-                return res.json({ anime: animeName, episodes });
-            }
+            await browser.close();
+            return res.json({ episode: episode.title, download: smallestFile.link });
         }
+
+        await browser.close();
+        return res.json({ anime: animeName, episodes });
 
     } catch (error) {
         console.error("🚨 Error occurred:", error);
