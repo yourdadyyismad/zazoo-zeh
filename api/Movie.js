@@ -109,7 +109,11 @@ const scrapeEpisode = async (query) => {
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
-        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
+        // If the query contains "Ep", remove it to search for the season
+        const baseQuery = query.replace(/Ep\d+/, "").trim();
+        const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(baseQuery)}&post_type=post`;
+        
+        console.log(`🌐 Fetching search results for: ${baseQuery}`);
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
@@ -137,8 +141,9 @@ const scrapeEpisode = async (query) => {
             const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
 
             if (episodeTitle && downloadHref) {
+                const episodeNumber = episodeTitle.match(/(\d+)$/)?.[0] || ""; // Extract episode number
                 episodes.push({
-                    episode: episodeTitle.replace("Episode ", "").trim(),  // Extract episode number
+                    episode: episodeNumber,
                     download_link: downloadHref
                 });
             }
@@ -151,12 +156,12 @@ const scrapeEpisode = async (query) => {
 
         // If the user is searching for a specific episode (e.g., "Solo Leveling S01Ep01")
         if (query.toLowerCase().includes("ep")) {
-            const episodeNumber = query.match(/\d+$/)?.[0]; // Extract episode number from query
+            const episodeNumber = query.match(/Ep(\d+)/)?.[1]; // Extract episode number
             const specificEpisode = episodes.find(ep => ep.episode === episodeNumber);
 
             if (!specificEpisode) {
-                console.error("❌ Episode not found.");
-                return { error: "Episode not found" };
+                console.error(`❌ Episode ${episodeNumber} not found.`);
+                return { error: `Episode ${episodeNumber} not found` };
             }
 
             console.log(`✅ Episode ${episodeNumber} Link Found: ${specificEpisode.download_link}`);
