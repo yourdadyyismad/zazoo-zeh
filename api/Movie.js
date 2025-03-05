@@ -109,15 +109,15 @@ const scrapeEpisode = async (query) => {
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
-        // If the query contains "Ep", remove it to search for the season
+        // Extract the season name by removing "EpXX" if present
         const baseQuery = query.replace(/Ep\d+/, "").trim();
         const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(baseQuery)}&post_type=post`;
-        
+
         console.log(`🌐 Fetching search results for: ${baseQuery}`);
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
-        // Extract the first search result
+        // Get the first result (assuming it's the correct season page)
         const firstResult = $(".search-entry-title a").first();
         const showTitle = firstResult.text().trim();
         const showLink = firstResult.attr("href");
@@ -129,23 +129,27 @@ const scrapeEpisode = async (query) => {
 
         console.log(`📺 Show Found: ${showTitle} | Link: ${showLink}`);
 
-        // Get the episode list from the series page
+        // Fetch the season page
         const { data: showHtml } = await axios.get(showLink);
         const showPage = cheerio.load(showHtml);
 
         let episodes = [];
 
-        // Extract all episodes
-        showPage("section.elementor-section").each((_, element) => {
-            const episodeTitle = showPage(element).find("h2.elementor-heading-title").text().trim();
-            const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
+        // Extract all available episodes
+        showPage(".elementor-button-wrapper a").each((_, element) => {
+            const downloadHref = showPage(element).attr("href");
+            const episodeText = showPage(element).closest("section").find("h2").text().trim();
 
-            if (episodeTitle && downloadHref) {
-                const episodeNumber = episodeTitle.match(/(\d+)$/)?.[0] || ""; // Extract episode number
-                episodes.push({
-                    episode: episodeNumber,
-                    download_link: downloadHref
-                });
+            if (downloadHref && episodeText) {
+                const episodeNumberMatch = episodeText.match(/(\d+)/); // Extract number
+                const episodeNumber = episodeNumberMatch ? episodeNumberMatch[0] : null;
+
+                if (episodeNumber) {
+                    episodes.push({
+                        episode: episodeNumber,
+                        download_link: downloadHref
+                    });
+                }
             }
         });
 
@@ -154,9 +158,9 @@ const scrapeEpisode = async (query) => {
             return { error: "No episodes found" };
         }
 
-        // If the user is searching for a specific episode (e.g., "Solo Leveling S01Ep01")
+        // If the query is for a specific episode like "S01Ep01"
         if (query.toLowerCase().includes("ep")) {
-            const episodeNumber = query.match(/Ep(\d+)/)?.[1]; // Extract episode number
+            const episodeNumber = query.match(/Ep(\d+)/)?.[1]; // Extract requested episode number
             const specificEpisode = episodes.find(ep => ep.episode === episodeNumber);
 
             if (!specificEpisode) {
@@ -173,10 +177,10 @@ const scrapeEpisode = async (query) => {
             };
         }
 
-        // If the user is searching for the full season
+        // If only the season was searched for, return all episodes
         console.log(`✅ Returning all ${episodes.length} episodes.`);
         return { title: showTitle, episodes };
-        
+
     } catch (error) {
         console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
