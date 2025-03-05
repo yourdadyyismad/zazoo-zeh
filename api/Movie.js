@@ -8,13 +8,13 @@ const router = express.Router();
 const CHROMIUM_PATH = "/usr/bin/chromium";
 
 const scrapeNkiri = async (query) => {
-    console.log(`ðŸ” Searching for: ${query}`);
+    console.log(`🔍 Searching for: ${query}`);
 
     try {
         const searchUrl = `https://nkiri.com/?s=${encodeURIComponent(query)}&post_type=post`;
 
-        // ðŸ”¹ Use Axios instead of Puppeteer to get the search results
-        console.log(`ðŸŒ Fetching search results via Axios...`);
+        // 🌐 Fetch search results using Axios
+        console.log(`🌍 Fetching search results via Axios...`);
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
@@ -24,14 +24,15 @@ const scrapeNkiri = async (query) => {
         const movieLink = firstResult.attr("href");
 
         if (!movieLink) {
-            console.error("âŒ Movie not found.");
+            console.error("❌ Movie not found.");
             return { error: "Movie not found" };
         }
 
-        console.log(`ðŸŽ¬ Movie Found: ${movieTitle} | Link: ${movieLink}`);
+        console.log(`🎬 Movie Found: ${movieTitle}`);
+        console.log(`🔗 Link: ${movieLink}`);
 
-        // ðŸ”¹ Use Axios again to get the movie page
-        console.log(`ðŸ“„ Fetching movie page via Axios...`);
+        // 📄 Fetch movie page using Axios
+        console.log(`📜 Fetching movie page...`);
         const { data: movieHtml } = await axios.get(movieLink);
         const moviePage = cheerio.load(movieHtml);
 
@@ -42,13 +43,13 @@ const scrapeNkiri = async (query) => {
         const downloadLink = moviePage(".elementor-button-wrapper a").attr("href");
 
         if (!downloadLink) {
-            console.error("âŒ Invalid download link.");
+            console.error("❌ Invalid download link.");
             return { title: movieTitle, description, download_link: "Invalid download link" };
         }
 
-        console.log(`ðŸ“‚ Navigating to download page: ${downloadLink}`);
+        console.log(`📥 Navigating to download page: ${downloadLink}`);
 
-        // ðŸ”¹ NOW we use Puppeteer ONLY to bypass popups and click buttons
+        // 🚀 Launch Puppeteer to handle popups and button clicks
         const browser = await puppeteer.launch({
             executablePath: CHROMIUM_PATH,
             headless: true,
@@ -64,16 +65,16 @@ const scrapeNkiri = async (query) => {
 
         page.on("response", async (response) => {
             const url = response.url();
-            console.log(`ðŸ”„ Network Response: ${url}`);
+            console.log(`🔄 Network Response: ${url}`);
 
             if (url.includes("downloadwella.com/d/") && url.endsWith(".mkv")) {
                 finalDownloadLink = url;
-                console.log(`âœ… Final Download Link: ${finalDownloadLink}`);
+                console.log(`✅ Final Download Link: ${finalDownloadLink}`);
             }
         });
 
         while (!finalDownloadLink && retryCount < maxRetries) {
-            console.log(`ðŸ” Attempt ${retryCount + 1}: Clicking 'Create Download Link'`);
+            console.log(`🔁 Attempt ${retryCount + 1}: Clicking 'Create Download Link'`);
             await page.waitForSelector(".btext", { timeout: 10000 });
             await page.click(".btext");
 
@@ -82,11 +83,11 @@ const scrapeNkiri = async (query) => {
             const currentUrl = page.url();
 
             if (!currentUrl.includes("downloadwella.com")) {
-                console.warn(`ðŸš¨ Ad detected! Going back and retrying...`);
+                console.warn(`🚨 Ad detected! Going back and retrying...`);
                 await page.goBack();
                 await page.waitForTimeout(2000);
             } else {
-                console.log(`ðŸ“¥ Valid page detected, waiting for final link...`);
+                console.log(`📌 Valid page detected, waiting for final link...`);
                 await page.waitForTimeout(10000);
             }
 
@@ -96,20 +97,22 @@ const scrapeNkiri = async (query) => {
         await browser.close();
 
         if (!finalDownloadLink) {
-            console.error("âŒ Failed to get final link after retries.");
+            console.error("❌ Failed to get final link after retries.");
             return { title: movieTitle, description, download_link: "No final link found" };
         }
 
-        console.log(`ðŸŽ‰ Success! Final Download Link: ${finalDownloadLink}`);
+        console.log(`🎉 Success!`);
+        console.log(`🎬 Title: ${movieTitle}`);
+        console.log(`🔗 Download Link: ${finalDownloadLink}`);
+
         return { title: movieTitle, description, download_link: finalDownloadLink };
     } catch (error) {
-        console.error("âŒ Error:", error.message);
+        console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
     }
 };
 
-
-const scrapeEpisode = async (query) => { 
+ const scrapeEpisode = async (query) => { 
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
@@ -155,7 +158,7 @@ const scrapeEpisode = async (query) => {
 
             if (episodeTitle.toLowerCase() === `episode ${episodeNumber}`.toLowerCase()) {
                 episodeDownloadPage = downloadHref;
-                foundEpisodeTitle = episodeTitle;
+                foundEpisodeTitle = `${showTitle} - ${episodeTitle}`; // ✅ Updated Title Format
                 return false; // Stop looping once found
             }
         });
