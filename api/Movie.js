@@ -37,15 +37,28 @@ router.get("/", async (req, res) => {
         console.log("🌍 Navigating to base URL...");
         await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
 
-        // 2️⃣ Perform search
+        // 2️⃣ Type anime name into search box
         console.log(`⌨️ Typing search query: ${animeName}`);
         await page.type("#search_box", animeName);
-        await page.keyboard.press("Enter");
 
-        // Wait for search results to load
-        await page.waitForSelector(".c_h2 a");
+        // 3️⃣ Wait for 3 seconds before pressing enter
+        console.log("⏳ Waiting 3 seconds to check for autocomplete suggestions...");
+        await page.waitForTimeout(3000);
 
-        // 3️⃣ Extract first anime result link
+        // 4️⃣ Check if autocomplete suggestions appear
+        const hasSuggestions = await page.$("ul li");
+
+        if (hasSuggestions) {
+            console.log("✅ Autocomplete suggestions found! Clicking the first suggestion...");
+            await page.click("ul li:first-child");
+            await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+        } else {
+            console.log("⚠️ No autocomplete suggestions, proceeding with normal search...");
+            await page.keyboard.press("Enter");
+            await page.waitForSelector(".c_h2 a");
+        }
+
+        // 5️⃣ Extract first anime result link
         console.log("🔗 Extracting first search result...");
         const content = await page.content();
         const $ = cheerio.load(content);
@@ -60,11 +73,11 @@ router.get("/", async (req, res) => {
         const animePageUrl = `https://www.tokyoinsider.com${animeLink}`;
         console.log(`✅ Anime found: ${animePageUrl}`);
 
-        // 4️⃣ Navigate to the anime's page
+        // 6️⃣ Navigate to the anime's page
         console.log("🌍 Opening anime page...");
         await page.goto(animePageUrl, { waitUntil: "domcontentloaded" });
 
-        // 5️⃣ Scrape the episode list
+        // 7️⃣ Scrape the episode list
         console.log("📜 Scraping episode list...");
         const animeContent = await page.content();
         const $$ = cheerio.load(animeContent);
@@ -84,7 +97,7 @@ router.get("/", async (req, res) => {
 
         console.log(`✅ Found ${episodes.length} episodes`);
 
-        // 6️⃣ If episode number is provided, find it
+        // 8️⃣ If episode number is provided, find it
         let episode;
         if (episodeNumber) {
             episode = episodes.find(e => e.title.includes(`episode ${episodeNumber}`));
@@ -100,11 +113,11 @@ router.get("/", async (req, res) => {
             return res.json({ anime: animeName, episodes });
         }
 
-        // 7️⃣ Navigate to episode page
+        // 9️⃣ Navigate to episode page
         console.log("🌍 Navigating to episode page...");
         await page.goto(episode.link, { waitUntil: "domcontentloaded" });
 
-        // 8️⃣ Extract download links and find the smallest file
+        // 🔟 Extract download links and find the smallest file
         console.log("📥 Extracting download links...");
         const episodeContent = await page.content();
         const $$$ = cheerio.load(episodeContent);
@@ -126,7 +139,7 @@ router.get("/", async (req, res) => {
             return res.status(404).json({ error: "No valid download links found" });
         }
 
-        // 9️⃣ Find the smallest file
+        // 🔢 Find the smallest file
         console.log(`📊 Found ${downloadLinks.length} download links, selecting the smallest...`);
         const smallestFile = downloadLinks.reduce((prev, curr) => (prev.sizeMB < curr.sizeMB ? prev : curr));
 
