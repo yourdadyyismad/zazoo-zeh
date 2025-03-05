@@ -25,8 +25,8 @@ router.get("/", async (req, res) => {
 
         // 🔹 2. Launch Puppeteer
         const browser = await puppeteer.launch({
-            headless: false, // Change to "true" for production
-            executablePath: "/usr/bin/google-chrome-stable", // Adjust based on your system
+            headless: true, // Change to "true" for production
+            executablePath: "/usr/bin/chromium", // Adjust based on your system
             args: ["--no-sandbox", "--disable-setuid-sandbox"]
         });
 
