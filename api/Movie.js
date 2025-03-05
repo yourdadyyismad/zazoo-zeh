@@ -37,9 +37,6 @@ router.get("/", async (req, res) => {
         await page.type("input.search-input", videoUrl);
         console.log(`✅ Entered video URL`);
 
-        // 🔹 4. Click "Get Video"
-        await page.click("button.text-white");
-        console.log(`✅ Clicked "Get Video"`);
 
         // 🔹 5. Wait for the results section to appear
         await page.waitForSelector("#downloadSection");
