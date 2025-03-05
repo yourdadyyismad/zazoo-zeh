@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
         console.log(`✅ Entered video URL`);
 
         // 🔹 4. Click "Get Video"
-        await page.click("button.text-white.bg-[#fd0054]");
+        await page.click("button.text-white");
         console.log(`✅ Clicked "Get Video"`);
 
         // 🔹 5. Wait for the results section to appear
