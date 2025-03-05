@@ -104,8 +104,8 @@ const scrapeNkiri = async (query) => {
     }
 };
 
-// ✅ **New function to search for a specific episode**
-const scrapeEpisode = async (query) => {
+// ✅ Improved function to scrape all episodes
+const scrapeEpisode = async (query) => { 
     console.log(`🔍 Searching for Episode: ${query}`);
 
     try {
@@ -113,7 +113,7 @@ const scrapeEpisode = async (query) => {
         const { data: searchHtml } = await axios.get(searchUrl);
         const $ = cheerio.load(searchHtml);
 
-        // Extract the first result
+        // Extract the first search result
         const firstResult = $(".search-entry-title a").first();
         const showTitle = firstResult.text().trim();
         const showLink = firstResult.attr("href");
@@ -125,37 +125,58 @@ const scrapeEpisode = async (query) => {
 
         console.log(`📺 Show Found: ${showTitle} | Link: ${showLink}`);
 
-        // Get the episode page
+        // Get the episode list from the series page
         const { data: showHtml } = await axios.get(showLink);
         const showPage = cheerio.load(showHtml);
 
-        let episodeDownloadLink = null;
+        let episodes = [];
 
-        // Extract episode link
+        // Extract all episodes
         showPage("section.elementor-section").each((_, element) => {
             const episodeTitle = showPage(element).find("h2.elementor-heading-title").text().trim();
             const downloadHref = showPage(element).find(".elementor-button-wrapper a").attr("href");
 
-            if (episodeTitle.toLowerCase().includes(query.toLowerCase())) {
-                episodeDownloadLink = downloadHref;
-                return false; // Stop looping once found
+            if (episodeTitle && downloadHref) {
+                episodes.push({
+                    episode: episodeTitle.replace("Episode ", "").trim(),  // Extract episode number
+                    download_link: downloadHref
+                });
             }
         });
 
-        if (!episodeDownloadLink) {
-            console.error("❌ Episode not found.");
-            return { error: "Episode not found" };
+        if (episodes.length === 0) {
+            console.error("❌ No episodes found.");
+            return { error: "No episodes found" };
         }
 
-        console.log(`✅ Episode Link Found: ${episodeDownloadLink}`);
+        // If the user is searching for a specific episode (e.g., "Solo Leveling S01Ep01")
+        if (query.toLowerCase().includes("ep")) {
+            const episodeNumber = query.match(/\d+$/)?.[0]; // Extract episode number from query
+            const specificEpisode = episodes.find(ep => ep.episode === episodeNumber);
 
-        return { title: showTitle, episode: query, download_link: episodeDownloadLink };
+            if (!specificEpisode) {
+                console.error("❌ Episode not found.");
+                return { error: "Episode not found" };
+            }
+
+            console.log(`✅ Episode ${episodeNumber} Link Found: ${specificEpisode.download_link}`);
+
+            return {
+                title: showTitle,
+                episode: episodeNumber,
+                download_link: specificEpisode.download_link
+            };
+        }
+
+        // If the user is searching for the full season
+        console.log(`✅ Returning all ${episodes.length} episodes.`);
+        return { title: showTitle, episodes };
+        
     } catch (error) {
         console.error("❌ Error:", error.message);
         return { error: "Something went wrong", details: error.message };
     }
 };
-
 // ✅ **New endpoint to get an episode**
 router.get("/episode", async (req, res) => {
     try {
