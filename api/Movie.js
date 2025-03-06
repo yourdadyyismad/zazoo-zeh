@@ -1,5 +1,4 @@
 const express = require("express");
-const axios = require("axios");
 const cheerio = require("cheerio");
 const puppeteer = require("puppeteer-core");
 
@@ -48,15 +47,39 @@ router.get("/", async (req, res) => {
     const secondUrl = firstResultUrl.startsWith("http") ? firstResultUrl : `${BASE_URL}${firstResultUrl}`;
     console.log(`🔗 Second URL: ${secondUrl}`);
 
-    // Step 6: Close the browser
+    // Step 6: Navigate to the second URL
+    console.log(`🌍 Fetching song page: ${secondUrl}`);
+    await page.goto(secondUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
+
+    // Step 7: Wait for the lyrics to load
+    await page.waitForSelector(".lyric-content", { timeout: 30000 }); // 30 seconds timeout
+    console.log("✅ Song page loaded.");
+
+    // Step 8: Extract the lyrics
+    const lyrics = await page.evaluate(() => {
+      const lyricContent = document.querySelector(".lyric-content");
+      return lyricContent ? lyricContent.innerText.trim() : null;
+    });
+
+    if (!lyrics) {
+      console.log("❌ Lyrics not found.");
+      await browser.close();
+      return res.status(404).json({ error: "Lyrics not found" });
+    }
+
+    console.log("📜 Lyrics found:");
+    console.log(lyrics.substring(0, 100) + "..."); // Log first 100 characters of lyrics
+
+    // Step 9: Close the browser
     await browser.close();
 
-    // Step 7: Return the response
+    // Step 10: Return the response
     return res.json({
       CREATOR: "DRACULA",
       STATUS: 200,
       query,
       secondUrl,
+      lyrics,
     });
   } catch (error) {
     console.error(`❌ Error: ${error.message}`);
