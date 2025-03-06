@@ -1,4 +1,6 @@
-    const express = require("express");
+const express = require("express");
+const axios = require("axios");
+const cheerio = require("cheerio");
 const puppeteer = require("puppeteer-core");
 
 const router = express.Router();
@@ -24,10 +26,10 @@ router.get("/", async (req, res) => {
     // Step 2: Navigate to the search page
     const searchUrl = `${BASE_URL}/?q=${encodeURIComponent(query)}`;
     console.log(`🌍 Fetching search page: ${searchUrl}`);
-    await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
     // Step 3: Wait for the search results to load
-    await page.waitForSelector(".gs-title a.gs-title");
+    await page.waitForSelector(".gs-title a.gs-title", { timeout: 30000 }); // 30 seconds timeout
     console.log("✅ Search results loaded.");
 
     // Step 4: Extract the first result's URL
@@ -42,40 +44,19 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ error: "No search results found" });
     }
 
-    console.log(`🔗 First result URL: ${firstResultUrl}`);
+    // Step 5: Construct the second URL
+    const secondUrl = firstResultUrl.startsWith("http") ? firstResultUrl : `${BASE_URL}${firstResultUrl}`;
+    console.log(`🔗 Second URL: ${secondUrl}`);
 
-    // Step 5: Navigate to the first result's page
-    console.log(`🌍 Fetching song page: ${firstResultUrl}`);
-    await page.goto(firstResultUrl, { waitUntil: "domcontentloaded" });
-
-    // Step 6: Wait for the song details and lyrics to load
-    await page.waitForSelector(".cnt-head_title");
-    console.log("✅ Song page loaded.");
-
-    // Step 7: Extract song details and lyrics
-    const songDetails = await page.evaluate(() => {
-      
-      const lyrics = document.querySelector(".cnt-letra")?.innerText.trim();
-
-      return {
-        lyrics,
-      };
-    });
-
-    
-
-  
-    console.log(`📜 Lyrics: ${songDetails.lyrics.substring(0, 50)}...`); // Log first 50 chars of lyrics
-
-    // Step 8: Close the browser
+    // Step 6: Close the browser
     await browser.close();
 
-    // Step 9: Return the response
+    // Step 7: Return the response
     return res.json({
       CREATOR: "DRACULA",
       STATUS: 200,
       query,
-      songDetails,
+      secondUrl,
     });
   } catch (error) {
     console.error(`❌ Error: ${error.message}`);
