@@ -1,199 +1,96 @@
 const express = require("express");
-const puppeteer = require("puppeteer-core");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const puppeteer = require("puppeteer-core");
 
 const router = express.Router();
-const CHROMIUM_PATH = "/usr/bin/chromium";
-const BASE_URL = "https://www.tokyoinsider.com/anime";
+const BASE_URL = "https://www.letras.com";
 
-/**
- * Scrape anime details from Tokyo Insider
- */
-const scrapeAnime = async (query) => {
-    console.log(`🔍 Searching for Anime: ${query}`);
-
-    try {
-        const searchUrl = BASE_URL;
-        console.log(`🌍 Fetching search page: ${searchUrl}`);
-
-        // 🚀 Launch Puppeteer
-        const browser = await puppeteer.launch({
-            executablePath: CHROMIUM_PATH,
-            headless: true,
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
-        });
-
-        const page = await browser.newPage();
-        await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
-
-        // Type query into search box
-        console.log(`⌨️ Typing search query: ${query}`);
-        await page.type("#search_box", query);
-        await page.waitForTimeout(3000);
-
-        // Check for search results
-        const hasResults = await page.$("ul li.ac_even, ul li.ac_odd");
-
-        if (!hasResults) {
-            console.log("❌ No search suggestions found.");
-            await browser.close();
-            return { error: "Anime not found" };
-        }
-
-        // Click the first search result
-        console.log("✅ Clicking the first search result...");
-        await page.click("ul li.ac_even, ul li.ac_odd");
-
-        // Wait for episodes to load
-        await page.waitForSelector(".episode a");
-
-        // Scrape episode list
-        const animeHtml = await page.content();
-        const $ = cheerio.load(animeHtml);
-
-        let episodes = [];
-        $(".episode a").each((_, el) => {
-            const title = $(el).text().trim();
-            const link = `https://www.tokyoinsider.com${$(el).attr("href")}`;
-            episodes.push({ title, link });
-        });
-
-        console.log(`✅ Found ${episodes.length} episodes.`);
-        await browser.close();
-
-        return { title: query, episodes };
-    } catch (error) {
-        console.error("❌ Error:", error.message);
-        return { error: "Something went wrong", details: error.message };
-    }
-};
-
-/**
- * Scrape anime episode download link
- */
-const scrapeEpisode = async (query) => {
-    console.log(`🔍 Searching for Episode: ${query}`);
-
-    try {
-        // Extract anime title and episode number
-        const animeName = query.split(" S")[0];
-        const episodeMatch = query.match(/EP(\d+)/i);
-        if (!episodeMatch) {
-            console.error("❌ Invalid episode format.");
-            return { error: "Invalid episode format. Use S01EP01 format." };
-        }
-        const episodeNumber = parseInt(episodeMatch[1], 10);
-        console.log(`🎬 Anime: ${animeName}, Episode: ${episodeNumber}`);
-
-        // Scrape anime page first
-        const animeData = await scrapeAnime(animeName);
-        if (animeData.error) return animeData;
-
-        // Find the specific episode link
-        const episode = animeData.episodes.find(e =>
-            new RegExp(`\\bepisode ${episodeNumber}\\b`, "i").test(e.title)
-        );
-
-        if (!episode) {
-            console.error(`❌ Episode ${episodeNumber} not found.`);
-            return { error: "Episode not found" };
-        }
-
-        console.log(`📥 Navigating to episode page: ${episode.link}`);
-
-        // 🚀 Launch Puppeteer for download extraction
-        const browser = await puppeteer.launch({
-            executablePath: CHROMIUM_PATH,
-            headless: true,
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
-        });
-
-        const page = await browser.newPage();
-        await page.goto(episode.link, { waitUntil: "domcontentloaded" });
-
-        // Scrape download links
-        const episodeHtml = await page.content();
-        const $ = cheerio.load(episodeHtml);
-
-        let downloadLinks = [];
-        $(".c_h2, .c_h2b").each((_, el) => {
-            const link = $("a", el).attr("href");
-            const sizeText = $(".finfo b", el).first().text();
-            const sizeMB = parseFloat(sizeText.replace(" MB", ""));
-
-            if (link && link.endsWith(".mkv") && !isNaN(sizeMB)) {
-                downloadLinks.push({ link, sizeMB });
-            }
-        });
-
-        await browser.close();
-
-        if (downloadLinks.length === 0) {
-            console.error("❌ No valid download links found.");
-            return { error: "No valid download links found" };
-        }
-
-        // Find the smallest file
-        const smallestFile = downloadLinks.reduce((prev, curr) =>
-            prev.sizeMB < curr.sizeMB ? prev : curr
-        );
-
-        console.log(`✅ Smallest file selected: ${smallestFile.link} (${smallestFile.sizeMB} MB)`);
-
-        return { title: episode.title, download_link: smallestFile.link };
-    } catch (error) {
-        console.error("❌ Error:", error.message);
-        return { error: "Something went wrong", details: error.message };
-    }
-};
-
-// ✅ Anime search endpoint
+// **MAIN ROUTE**
 router.get("/", async (req, res) => {
-    try {
-        const { query } = req.query;
-        if (!query) return res.status(400).json({ error: "Anime query is required" });
+  const query = req.query.q;
 
-        const animeData = await scrapeAnime(query);
+  if (!query) return res.status(400).json({ error: "Missing 'q' parameter" });
 
-        res.json({
-            CREATOR: "DRACULA",
-            STATUS: 200,
-            ...animeData
-        });
-    } catch (error) {
-        console.error("❌ Server error:", error.message);
-        res.status(500).json({
-            CREATOR: "DRACULA",
-            STATUS: 500,
-            error: "Something went wrong",
-            details: error.message
-        });
+  console.log(`🔍 Searching for: ${query}`);
+
+  try {
+    // Step 1: Launch Puppeteer browser
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: "/usr/bin/chromium", // Adjust this path if needed
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    const page = await browser.newPage();
+
+    // Step 2: Navigate to the search page
+    const searchUrl = `${BASE_URL}/?q=${encodeURIComponent(query)}`;
+    console.log(`🌍 Fetching search page: ${searchUrl}`);
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+
+    // Step 3: Wait for the search results to load
+    await page.waitForSelector(".gs-title a.gs-title");
+    console.log("✅ Search results loaded.");
+
+    // Step 4: Extract the first result's URL
+    const firstResultUrl = await page.evaluate(() => {
+      const firstResult = document.querySelector(".gs-title a.gs-title");
+      return firstResult ? firstResult.href : null;
+    });
+
+    if (!firstResultUrl) {
+      console.log("❌ No search results found.");
+      await browser.close();
+      return res.status(404).json({ error: "No search results found" });
     }
-});
 
-// ✅ Episode download endpoint
-router.get("/episode", async (req, res) => {
-    try {
-        const { query } = req.query;
-        if (!query) return res.status(400).json({ error: "Episode query is required" });
+    console.log(`🔗 First result URL: ${firstResultUrl}`);
 
-        const episodeData = await scrapeEpisode(query);
+    // Step 5: Navigate to the first result's page
+    console.log(`🌍 Fetching song page: ${firstResultUrl}`);
+    await page.goto(firstResultUrl, { waitUntil: "domcontentloaded" });
 
-        res.json({
-            CREATOR: "DRACULA",
-            STATUS: 200,
-            ...episodeData
-        });
-    } catch (error) {
-        console.error("❌ Server error:", error.message);
-        res.status(500).json({
-            CREATOR: "DRACULA",
-            STATUS: 500,
-            error: "Something went wrong",
-            details: error.message
-        });
+    // Step 6: Wait for the song details and lyrics to load
+    await page.waitForSelector(".textStyle-primary");
+    console.log("✅ Song page loaded.");
+
+    // Step 7: Extract song details and lyrics
+    const songDetails = await page.evaluate(() => {
+      const songTitle = document.querySelector(".textStyle-primary")?.innerText.trim();
+      const artistName = document.querySelector(".textStyle-secondary")?.innerText.trim();
+      const lyrics = document.querySelector(".lyric-content")?.innerText.trim();
+
+      return {
+        songTitle,
+        artistName,
+        lyrics,
+      };
+    });
+
+    if (!songDetails.songTitle || !songDetails.artistName || !songDetails.lyrics) {
+      console.log("❌ Song details or lyrics not found.");
+      await browser.close();
+      return res.status(404).json({ error: "Song details or lyrics not found" });
     }
+
+    console.log(`🎵 Song Title: ${songDetails.songTitle}`);
+    console.log(`🎤 Artist: ${songDetails.artistName}`);
+    console.log(`📜 Lyrics: ${songDetails.lyrics.substring(0, 50)}...`); // Log first 50 chars of lyrics
+
+    // Step 8: Close the browser
+    await browser.close();
+
+    // Step 9: Return the response
+    return res.json({
+      CREATOR: "DRACULA",
+      STATUS: 200,
+      query,
+      songDetails,
+    });
+  } catch (error) {
+    console.error(`❌ Error: ${error.message}`);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 module.exports = router;
