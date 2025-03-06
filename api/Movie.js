@@ -26,11 +26,7 @@ router.get("/", async (req, res) => {
     console.log(`🌍 Fetching search page: ${searchUrl}`);
     await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
-    // Step 3: Wait for the search results to load with a timeout
-    await page.waitForSelector(".gs-title a.gs-title", { timeout: 30000 }); // 30 seconds timeout
-    console.log("✅ Search results loaded.");
-
-    // Step 4: Extract the first result's URL
+    // Step 3: Extract the first result's URL
     const firstResultUrl = await page.evaluate(() => {
       const firstResult = document.querySelector(".gs-title a.gs-title");
       return firstResult ? firstResult.href : null;
@@ -44,15 +40,11 @@ router.get("/", async (req, res) => {
 
     console.log(`🔗 First result URL: ${firstResultUrl}`);
 
-    // Step 5: Navigate to the first result's page with a timeout
+    // Step 4: Navigate to the first result's page with a timeout
     console.log(`🌍 Fetching song page: ${firstResultUrl}`);
     await page.goto(firstResultUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
-    // Step 6: Wait for the song details and lyrics to load with a timeout
-    await page.waitForSelector(".textStyle--type-title", { timeout: 30000 }); // 30 seconds timeout
-    console.log("✅ Song page loaded.");
-
-    // Step 7: Extract song details and lyrics
+    // Step 5: Extract song details and lyrics
     const songDetails = await page.evaluate(() => {
       const songTitle = document.querySelector(".textStyle--type-title h1.textStyle-primary")?.innerText.trim();
       const artistName = document.querySelector(".textStyle--type-title h2.textStyle-secondary")?.innerText.trim();
@@ -75,10 +67,10 @@ router.get("/", async (req, res) => {
     console.log(`🎤 Artist: ${songDetails.artistName}`);
     console.log(`📜 Lyrics: ${songDetails.lyrics.substring(0, 50)}...`); // Log first 50 chars of lyrics
 
-    // Step 8: Close the browser
+    // Step 6: Close the browser
     await browser.close();
 
-    // Step 9: Return the response
+    // Step 7: Return the response
     return res.json({
       CREATOR: "DRACULA",
       STATUS: 200,
