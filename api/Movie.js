@@ -54,7 +54,6 @@ await page.goto(secondUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 console.log("🔍 Final Page URL:", page.url()); // Check if redirected
 
 // Wait for lyrics container
-await page.waitForSelector("article#js-lyric-content", { timeout: 30000 });
 console.log("✅ Song lyrics container loaded.");
 
 // Extract lyrics
