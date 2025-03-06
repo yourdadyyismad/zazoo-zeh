@@ -49,38 +49,49 @@ router.get("/", async (req, res) => {
 
     // Step 6: Navigate to the second URL
     console.log(`🌍 Fetching song page: ${secondUrl}`);
-    await page.goto(secondUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
+await page.goto(secondUrl, { waitUntil: "networkidle2", timeout: 30000 });
 
-    // Step 7: Wait for the lyrics to load
-    await page.waitForSelector(".lyric-content", { timeout: 30000 }); // 30 seconds timeout
-    console.log("✅ Song page loaded.");
+console.log("🔍 Final Page URL:", page.url()); // Check if redirected
 
-    // Step 8: Extract the lyrics
-    const lyrics = await page.evaluate(() => {
-      const lyricContent = document.querySelector(".lyric-content");
-      return lyricContent ? lyricContent.innerText.trim() : null;
-    });
+// Wait for lyrics container
+await page.waitForSelector("article#js-lyric-content", { timeout: 30000 });
+console.log("✅ Song lyrics container loaded.");
 
-    if (!lyrics) {
-      console.log("❌ Lyrics not found.");
-      await browser.close();
-      return res.status(404).json({ error: "Lyrics not found" });
-    }
+// Extract lyrics
+const { lyrics, imageUrl } = await page.evaluate(() => {
+    const lyricsContainer = document.querySelector("article#js-lyric-content");
+    const lyricsText = lyricsContainer ? lyricsContainer.innerText.trim() : null;
 
-    console.log("📜 Lyrics found:");
-    console.log(lyrics.substring(0, 100) + "..."); // Log first 100 characters of lyrics
+    // Extract image from `data-lazy` or fallback to `src`
+    const imageElement = document.querySelector(".thumbnail img");
+    const imageUrl = imageElement 
+        ? (imageElement.getAttribute("data-lazy") || imageElement.getAttribute("src")) 
+        : null;
 
-    // Step 9: Close the browser
+    return { lyrics: lyricsText, imageUrl };
+});
+
+if (!lyrics) {
+    console.log("❌ Lyrics not found.");
     await browser.close();
+    return res.status(404).json({ error: "Lyrics not found" });
+}
 
-    // Step 10: Return the response
-    return res.json({
-      CREATOR: "DRACULA",
-      STATUS: 200,
-      query,
-      secondUrl,
-      lyrics,
-    });
+console.log("📜 Lyrics found:", lyrics.substring(0, 100) + "..."); // Log first 100 characters
+console.log("🖼️ Image URL:", imageUrl || "No image found");
+
+// Close browser
+await browser.close();
+
+// Return response
+return res.json({
+    CREATOR: "DRACULA",
+    STATUS: 200,
+    query,
+    secondUrl,
+    lyrics,
+    imageUrl
+});)};
   } catch (error) {
     console.error(`❌ Error: ${error.message}`);
     return res.status(500).json({ error: "Internal server error" });
