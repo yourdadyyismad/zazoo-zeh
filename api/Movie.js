@@ -1,6 +1,4 @@
 const express = require("express");
-const axios = require("axios");
-const cheerio = require("cheerio");
 const puppeteer = require("puppeteer-core");
 
 const router = express.Router();
@@ -23,13 +21,13 @@ router.get("/", async (req, res) => {
     });
     const page = await browser.newPage();
 
-    // Step 2: Navigate to the search page
+    // Step 2: Navigate to the search page with a timeout
     const searchUrl = `${BASE_URL}/?q=${encodeURIComponent(query)}`;
     console.log(`🌍 Fetching search page: ${searchUrl}`);
-    await page.goto(searchUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
-    // Step 3: Wait for the search results to load
-    await page.waitForSelector(".gs-title a.gs-title");
+    // Step 3: Wait for the search results to load with a timeout
+    await page.waitForSelector(".gs-title a.gs-title", { timeout: 30000 }); // 30 seconds timeout
     console.log("✅ Search results loaded.");
 
     // Step 4: Extract the first result's URL
@@ -46,12 +44,12 @@ router.get("/", async (req, res) => {
 
     console.log(`🔗 First result URL: ${firstResultUrl}`);
 
-    // Step 5: Navigate to the first result's page
+    // Step 5: Navigate to the first result's page with a timeout
     console.log(`🌍 Fetching song page: ${firstResultUrl}`);
-    await page.goto(firstResultUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(firstResultUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
-    // Step 6: Wait for the song details and lyrics to load
-    await page.waitForSelector(".textStyle-primary");
+    // Step 6: Wait for the song details and lyrics to load with a timeout
+    await page.waitForSelector("h1.textStyle-primary", { timeout: 30000 }); // 30 seconds timeout
     console.log("✅ Song page loaded.");
 
     // Step 7: Extract song details and lyrics
