@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
 
     // Step 6: Navigate to the second URL
     console.log(`🌍 Fetching song page: ${secondUrl}`);
-await page.goto(secondUrl, { waitUntil: "networkidle2", timeout: 30000 });
+await page.goto(secondUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 
 console.log("🔍 Final Page URL:", page.url()); // Check if redirected
 
