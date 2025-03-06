@@ -56,8 +56,8 @@ router.get("/", async (req, res) => {
 
     // Step 7: Extract song details and lyrics
     const songDetails = await page.evaluate(() => {
-      const songTitle = document.querySelector(".textStyle-primary")?.innerText.trim();
-      const artistName = document.querySelector(".textStyle-secondary")?.innerText.trim();
+      const songTitle = document.querySelector("h1.textStyle-primary")?.innerText.trim();
+      const artistName = document.querySelector("h2.textStyle-secondary")?.innerText.trim();
       const lyrics = document.querySelector(".lyric-content")?.innerText.trim();
 
       return {
