@@ -49,13 +49,13 @@ router.get("/", async (req, res) => {
     await page.goto(firstResultUrl, { waitUntil: "domcontentloaded", timeout: 30000 }); // 30 seconds timeout
 
     // Step 6: Wait for the song details and lyrics to load with a timeout
-    await page.waitForSelector("h1.textStyle-primary", { timeout: 30000 }); // 30 seconds timeout
+    await page.waitForSelector(".textStyle--type-title", { timeout: 30000 }); // 30 seconds timeout
     console.log("✅ Song page loaded.");
 
     // Step 7: Extract song details and lyrics
     const songDetails = await page.evaluate(() => {
-      const songTitle = document.querySelector("h1.textStyle-primary")?.innerText.trim();
-      const artistName = document.querySelector("h2.textStyle-secondary")?.innerText.trim();
+      const songTitle = document.querySelector(".textStyle--type-title h1.textStyle-primary")?.innerText.trim();
+      const artistName = document.querySelector(".textStyle--type-title h2.textStyle-secondary")?.innerText.trim();
       const lyrics = document.querySelector(".lyric-content")?.innerText.trim();
 
       return {
